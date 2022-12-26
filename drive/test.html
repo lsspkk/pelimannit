@@ -1,0 +1,183 @@
+<html>
+  <head>
+  <meta charset="UTF-8">
+  <title>P</title>
+
+  <link href="peli.css" rel="stylesheet" type="text/css"/>
+  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+<style>
+
+table {
+  font-size: 8px;
+}
+td {
+  border: 1px solid #ddd;
+  width: 3em;
+  height: 3em;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 7px;
+}
+#indexes, #result {
+  margin-top: 30px;
+}
+</style>
+    <script type="text/javascript">
+
+
+	function _log(str) {
+    //$('#output').prepend(str + "<br/>");
+  //  console.log(str);
+	}
+  /**
+   * Returns a random integer between min (inclusive) and max (inclusive)
+   * Using Math.round() will give you a non-uniform distribution!
+   */
+  function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  function getNewRandomInt(min, max, old) {
+    if( max - min > 0 ) {
+      for( var i = 0; i < 100; i++ ) {
+        var v = getRandomInt(min, max);
+        if( v != old ) return v;
+      }
+    }
+    return old;
+  }
+  var randomIndexes = [];
+  function createRandomIndexes() {
+    var length = $('#tableLength').val();
+    var a = [];
+    if( length < 1 ) {
+      length = 2;
+    }
+
+    for( var i= 0; i < length; i++ ) {
+      a.push(i);
+    }
+    for( var i= 0; i < length; i++ ) {
+      var j = a[getRandomInt(0, a.length-1)];
+      var temp = a[j];
+      a[j] = a[i];
+      a[i] = temp;
+    }
+
+      $('#indexes').html("<table><tbody><tr>");
+
+    for( var i= 0; i < length; i++ ) {
+      $('#indexes').append('<td>'+a[i]+'</td>');
+    }
+    $('#indexes').append('</tr></tbody></table>');
+
+    randomIndexes = a;
+  }
+
+  function tableLengthUpdate(s) {
+    $('#table-length').html(s);
+  }
+  var noteIndex = [];
+
+  var intervalTimer = undefined;
+  function startGame() {
+    var seconds = $('#tableLength').val();
+    $('#seconds').html(seconds);
+    var ACTION = { GUESS : 1, SHOW: 2};
+    var a = ACTION.GUESS;
+    var i = 0;
+    var rand = -1;
+    var key = -1;
+    for(var j=0; j < randomIndexes.length; j++ ) {
+      noteIndex.push(j);
+    }
+
+    console.log("arvoin nuotin: "+rand+ "nuottien määrä:" + noteIndex.length);
+    rand = randomIndexes[i];
+    i = (i + 1) % randomIndexes.length;
+    key = noteIndex[rand];
+    $('#result').html("rand:" + rand + "  key:" + key + "<br/>");
+
+   intervalTimer = setInterval(function () {
+       seconds--;
+       $('#seconds').html(seconds);
+       a = ACTION.GUESS;
+       rand = randomIndexes[i];
+       i = (i + 1) % randomIndexes.length;
+       key = noteIndex[rand];
+       $('#result').html("rand:" + rand + "  key:" + key + "<br/>");
+       if ( seconds < 1 ) {
+         //console.log(a);
+         //console.log($('#showTime').val());
+           seconds = $('#tableLength').val();
+
+         }
+
+    }, 1000);
+  }
+  function stopGame() {
+
+    if( intervalTimer != undefined ) {
+      window.clearInterval(intervalTimer);
+      intervalTimer = undefined;
+    }
+    $('#notes').css("opacity", "1");
+  }
+
+
+    </script>
+    <script src="https://apis.google.com/js/client.js?onload=checkAuth">
+    </script>
+
+  </head>
+
+
+
+  <body>
+
+
+
+
+   <div id="startWindow" class="window">
+     <h3>Taulukko</h3>
+
+     <input type="range" min="1" max="60" value="20" id="tableLength" oninput="tableLengthUpdate(value)">
+     <span id="table-length">-10</span> indeksiä
+
+
+     <button id="stopGame" onclick="createRandomIndexes();">Arvo indeksit</button>
+     <button id="stopGame" onclick="startGame();">Käytä indeksejä</button>
+     <button id="stopGame" onclick="stopGame();">Lopeta käyttö</button>
+     <div id="noteAmount"> Nuotteja: <div id="amount">0</div> </div>
+     <div id="timer">Aika: <div id="seconds">0</div> s</div>
+
+     <div id="indexes"></div>
+
+     <div id="result"></div>
+   </div>
+
+
+   <div id="output"></div>
+
+
+<script>
+$( document ).ready(function() {
+  // need to init them sliders
+  $('#table-length').html($('#tableLength').val());
+
+});
+
+
+$("#output").click(function() {
+  $(this).toggleClass("selected");
+});
+</script>
+
+<script id="__bs_script__">//<![CDATA[
+    document.write("<script async src='http://HOST:3000/browser-sync/browser-sync-client.2.12.10.js'><\/script>".replace("HOST", location.hostname));
+//]]></script>
+
+  </body>
+</html>

@@ -1,0 +1,448 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pelimannin Muistipeli</title>
+
+    <link href="peli.css" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+    <script type="text/javascript">
+
+        // default folder in Google Drive
+        var targetFolder = "2017 nuotit";
+        //var targetFolder = "alut monta tahtia";
+
+
+
+        // Your Client ID can be retrieved from your project in the Google
+        // Developer Console, https://console.developers.google.com
+        const CLIENT_ID = '48076413225-l03lp5r9i7i6rstcpsvr0lk130p30q9p.apps.googleusercontent.com';
+        const API_KEY = 'AIzaSyAvtANQcpaVjyO1m79KUjb21ZMHb1j5ULc'
+        const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+
+        /**
+           * Callback after api.js is loaded.
+           */
+        function gapiLoaded() {
+            gapi.load('client', initializeGapiClient);
+            console.debug('gapiLoaded')
+        }
+
+        /**
+         * Callback after the API client is loaded. Loads the
+         * discovery doc to initialize the API.
+         */
+        async function initializeGapiClient() {
+            await gapi.client.init({
+                apiKey: API_KEY,
+                discoveryDocs: [DISCOVERY_DOC],
+            });
+            gapiInited = true;
+            maybeEnableButtons();
+        }
+
+        /**
+         * Callback after Google Identity Services are loaded.
+         */
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: '', // defined later
+            });
+            gisInited = true;
+            maybeEnableButtons();
+            console.debug('gisLoaded')
+        }
+
+        /**
+         * Enables user interaction after all libraries are loaded.
+         */
+        function maybeEnableButtons() {
+            if (gapiInited && gisInited) {
+                document.getElementById('authorize_button').style.visibility = 'visible';
+                document.getElementById('authorize_div').style.display = 'inline';
+
+            }
+        }
+
+        /**
+         *  Sign in the user upon button click.
+         */
+        function handleAuthClick() {
+            tokenClient.callback = async (resp) => {
+                if (resp.error !== undefined) {
+                    throw (resp);
+                }
+                document.getElementById('authorize_div').style.display = 'none';
+                document.getElementById('authorize_button').innerText = 'Refresh';
+
+                console.debug('calling listfiles')
+                await listFiles();
+            };
+
+            if (gapi.client.getToken() === null) {
+                // Prompt the user to select a Google Account and ask for consent to share their data
+                // when establishing a new session.
+                tokenClient.requestAccessToken({ prompt: 'consent' });
+            } else {
+                // Skip display of account chooser and consent dialog for an existing session.
+                tokenClient.requestAccessToken({ prompt: '' });
+            }
+        }
+
+        /**
+         *  Sign out the user upon button click.
+         */
+        function handleSignoutClick() {
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token);
+                gapi.client.setToken('');
+                document.getElementById('content').innerText = '';
+                document.getElementById('authorize_button').innerText = 'Authorize';
+                document.getElementById('signout_button').style.visibility = 'hidden';
+            }
+        }
+
+
+        /**
+         * Print files.
+         */
+        async function listFiles() {
+            var response = await gapi.client.drive.files.list({
+                'pageSize': 100,
+                'q': "name='" + targetFolder + "'",
+                'fields': "files(id, name)"
+            });
+            var files = response.result?.files;
+            if (files && files.length > 0) {
+                _log('L&ouml;ytyi ahjolalle-kansio!');
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    listNotes(file.name, file.id);
+                }
+            } else {
+                _log('kansiota: ' + targetFolder + ' ei l&ouml;ytynyt');
+            }
+        }
+
+
+        // make a nicely formatted songName
+        // spaces from _ etc.
+        function songName(str) {
+            var s = str.slice(0, -4);
+            s = s.replace(/_/g, " ");
+            s = s.charAt(0).toUpperCase() + s.slice(1);
+            var rs = s.replace(/-/g, " ");
+            return rs.replace(/\w\S*/g, function (txt) {
+                return txt.charAt(0).toUpperCase()
+                    + txt.substr(1).toLowerCase();
+            });
+        }
+
+
+        // noteList
+        // avain on songName(tiedostonnimi)+kansio
+        // sisältö on taulukko id, tiedoston nimi, kansion nimi
+        var noteList = {};
+
+        // indeksinumerot, ja niitä vastaavat notelist:n avaimet
+        var noteIndex = [];
+        function keys(obj) {
+            var keys = [];
+
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    keys.push(key);
+                }
+            }
+            return keys;
+        }
+
+
+        function showNote(key) {
+            var note = noteList[key];
+            if (!note)
+                return;
+            _log("showing note with id: " + note[0]);
+            if (note[1].endsWith('jpg'))
+                $("#image").html('<img src="https://docs.google.com/uc?export=view&id='
+                    + note[0] + '"' + '>');
+
+            if (note[1].endsWith('pdf'))
+                $("#image").html('<iframe src="https://drive.google.com/file/d/'
+                    + note[0] + '/preview" width="640" height="480"></iframe>');
+
+            $("#image").addClass("selected");
+
+        }
+
+
+
+        //https://docs.google.com/uc?export=view&id='+id+
+        function printNoteLink(id, fileName, folderName) {
+            $('#notes').append('<div id="noteLink" onClick="showNote(' + "'" + songName(fileName) + folderName + "'" + ')">'
+                + songName(fileName) + '</div><div class="notedesc">'
+                + folderName + '/' + fileName + '</div>');
+        }
+
+        function updateNoteList() {
+            //$('#notes').html("");
+            sortedKeys = keys(noteList).sort();
+
+            var previousChar = undefined;
+            for (var k = 0; k < sortedKeys.length; k++) {
+                var note = noteList[sortedKeys[k]];
+                var c = (note[1]).charAt(0).toUpperCase();
+                $("#notes").append('<a name="' + c + '"></a>');
+
+                printNoteLink(note[0], note[1], note[2]);
+                previousChar = c;
+            }
+        }
+        /**
+         * Print Notes.
+         */
+        async function listNotes(folderName, id) {
+            var str = "'" + id + "'" + ' in parents';
+            const response = await gapi.client.drive.files.list({
+                'pageSize': 100,
+                'orderBy': "name",
+                'q': str,
+                'fields': "nextPageToken, files(id, name)"
+            });
+
+            _log('  Printing folder id: ' + id);
+            var files = response.result?.files;
+            if (files && files.length > 0) {
+                _log('  Files:' + files.length);
+
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+
+                    if (file.name.indexOf(".jpg") > -1 || file.name.indexOf(".pdf") > -1) {
+
+                        _log(file.name + ' (' + file.id + ')');
+                        noteList[songName(file.name) + folderName] = [file.id, file.name, folderName];
+                        noteIndex.push(songName(file.name) + folderName);
+
+                    }
+                }
+
+                updateNoteList();
+
+            } else {
+                _log('Ei kuvatiedostoja.');
+            }
+        }
+
+        function _log(str) {
+            $('#output').prepend(str + "<br/>");
+            //  console.log(str);
+        }
+        /**
+         * Returns a random integer between min (inclusive) and max (inclusive)
+         * Using Math.round() will give you a non-uniform distribution!
+         */
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // lets use table for random indexes so that notes wont repeat often
+        var randomIndexes = [];
+        function createRandomIndexes() {
+            var length = noteIndex.length;
+            var a = [];
+
+            for (var i = 0; i < length; i++) {
+                a.push(i);
+            }
+            for (var i = 0; i < length; i++) {
+                var j = a[getRandomInt(0, a.length - 1)];
+                var temp = a[j];
+                a[j] = a[i];
+                a[i] = temp;
+            }
+            randomIndexes = a;
+        }
+
+        function guessTimeUpdate(s) {
+            $('#guess').html(s);
+        }
+        function showTimeUpdate(s) {
+            $('#show').html(s);
+        }
+
+        var intervalTimer = undefined;
+        function startGame() {
+            $('#startWindow').css("display", "none");
+            $('#gameWindow').css("display", "block");
+            $('#notes').css("opacity", 0);
+            createRandomIndexes();
+            $('#amount').html(noteIndex.length);
+            console.log($('#guessTime').val());
+            var seconds = $('#guessTime').val();
+            $('#seconds').html(seconds);
+            var ACTION = { GUESS: 1, SHOW: 2 };
+            var a = ACTION.GUESS;
+            var i = 0;
+            var rand;
+            var key;
+            rand = randomIndexes[i];
+            i = (i + 1) % randomIndexes.length;
+            key = noteIndex[rand];
+            console.log("arvoin nuotin: " + rand + + " " + key + " nuottien määrä:" + noteIndex.length);
+            $('#randomNote').html(songName(noteList[key][1]));
+
+            intervalTimer = setInterval(function () {
+                seconds--;
+                $('#seconds').html(seconds);
+                if (seconds < 1) {
+                    //console.log(a);
+                    //console.log($('#showTime').val());
+                    if (a == ACTION.GUESS) {
+                        $('#randomNote').html(songName(noteList[key][1]));
+                        showNote(key);
+                        seconds = $('#showTime').val();
+                        a = ACTION.SHOW;
+                    }
+                    else {
+                        seconds = $('#guessTime').val();
+                        a = ACTION.GUESS;
+                        $("#image").removeClass("selected");
+                        rand = randomIndexes[i];
+                        if (i + 1 == randomIndexes.length) {
+                            createRandomIndexes();  // new round, lets use new random sequence
+                        }
+                        i = (i + 1) % randomIndexes.length;
+                        console.log("arvoin nuotin: " + rand + + " " + key + " nuottien määrä:" + noteIndex.length);
+                        key = noteIndex[rand];
+                        $('#randomNote').html(songName(noteList[key][1]));
+                    }
+                }
+            }, 1000);
+        }
+        function stopGame() {
+            $('#startWindow').css("display", "block");
+            $('#gameWindow').css("display", "none");
+            if (intervalTimer != undefined) {
+                window.clearInterval(intervalTimer);
+                intervalTimer = undefined;
+            }
+            $('#notes').css("opacity", "1");
+        }
+
+
+    </script>
+
+
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
+</head>
+
+
+
+<body>
+    <div id="authorize_div" style="display: none;">
+
+        <h2>Pelimannin lupa</h2><span>
+            Jotta saadaan nuotit Googlen palvelimelta näkyviin, pitää pelimannin
+            kirjautua Googleen näillä tiedoilla.
+            <table style="padding: 50px;">
+                <tr>
+                    <td style="padding: 20px;">Tunnus: (sähköpostiosoite)</td>
+                    <td> ahjolan.pelimanni</td>
+                    <td style="padding: 20px 40px;" rowspan=2><button id="authorize_button"
+                            onclick="handleAuthClick(event)">
+                            Kirjaudu tästä
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 20px;">Salasana:</td>
+                    <td>oltermanni</td>
+                </tr>
+            </table>
+        </span>
+        <!--Button for the user to click to initiate auth sequence -->
+
+    </div>
+
+
+    <div id="startWindow" class="window">
+        <h1>Pelimannin muistipeli</h1>
+        Arvon sinulle kappaleiden nimiä.<br />
+        Yritä muistaa, miten kappale alkaa (ja ala soittamaan sitä).<br />
+        <br />
+        <h3>Muistamissaika</h3>
+        Tämän jälkeen saat nähdä nuotin.<br />
+
+        <input type="range" min="1" max="60" value="20" id="guessTime" oninput="guessTimeUpdate(value)">
+        <span id="guess">-10</span> sekuntia
+        <br />
+        <br />
+        <h3>Opetteluaika</h3>
+        Näin kauan saat nähdä nuotin.<br />
+        <input type="range" min="1" max="200" value="15" id="showTime" oninput="showTimeUpdate(value)">
+        <span id="show">-10</span> sekuntia
+
+        <br />
+        <br />
+        <br />
+        <br />
+        <button id="startGame" onclick="startGame();">Aloita peli</button>
+    </div>
+
+
+
+
+
+    <div id="gameWindow" class="window">
+        <button id="stopGame" onclick="stopGame();">Lopeta peli</button>
+        <div id="noteAmount"> Nuotteja: <div id="amount">0</div>
+        </div>
+        <div id="timer">Aika: <div id="seconds">0</div> s</div>
+        <div id="randomNoteInfo">Jospa seuraavaksi soitettaiskin...</div>
+
+        <div id="randomNote"></div>
+
+    </div>
+
+
+
+    <div id="image"></div>
+
+
+
+    <div id="notes">
+        <h3>lista arvottavista nuoteista</h3>
+    </div>
+    <div id="output"></div>
+
+
+    <script>
+        $(document).ready(function () {
+            // need to init them sliders
+            $('#guess').html($('#guessTime').val());
+            $('#show').html($('#showTime').val());
+
+        });
+
+
+        $("#output").click(function () {
+            $(this).toggleClass("selected");
+        });
+    </script>
+
+</body>
+
+</html>

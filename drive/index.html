@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="fi-FI">
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Ahjolan Pelimannien nuottiarkisto</title>
+    <meta name="description" content="Nuotteja kansanmuusikoille">
+    <meta name="keywords" content="HTML,CSS,XML,JavaScript">
+    <meta name="author" content="Lasse Pekkarinen">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link href="nuottiarkisto.css" rel="stylesheet" type="text/css" />
+
+
+
+
+
+    <script type="text/javascript">
+        // Your Client ID can be retrieved from your project in the Google
+        // Developer Console, https://console.developers.google.com
+        const CLIENT_ID = '48076413225-l03lp5r9i7i6rstcpsvr0lk130p30q9p.apps.googleusercontent.com';
+        const API_KEY = 'AIzaSyAvtANQcpaVjyO1m79KUjb21ZMHb1j5ULc'
+        const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+
+        /**
+           * Callback after api.js is loaded.
+           */
+        function gapiLoaded() {
+            gapi.load('client', initializeGapiClient);
+            console.debug('gapiLoaded')
+        }
+
+        /**
+         * Callback after the API client is loaded. Loads the
+         * discovery doc to initialize the API.
+         */
+        async function initializeGapiClient() {
+            await gapi.client.init({
+                apiKey: API_KEY,
+                discoveryDocs: [DISCOVERY_DOC],
+            });
+            gapiInited = true;
+            maybeEnableButtons();
+        }
+
+        /**
+         * Callback after Google Identity Services are loaded.
+         */
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: '', // defined later
+            });
+            gisInited = true;
+            maybeEnableButtons();
+            console.debug('gisLoaded')
+        }
+
+        /**
+         * Enables user interaction after all libraries are loaded.
+         */
+        function maybeEnableButtons() {
+            if (gapiInited && gisInited) {
+                document.getElementById('authorize_button').style.visibility = 'visible';
+            }
+        }
+
+        /**
+         *  Sign in the user upon button click.
+         */
+        function handleAuthClick() {
+            tokenClient.callback = async (resp) => {
+                if (resp.error !== undefined) {
+                    throw (resp);
+                }
+                //document.getElementById('signout_button').style.visibility = 'visible';
+                document.getElementById('authorize_button').innerText = 'Refresh';
+                await listFiles();
+            };
+
+            if (gapi.client.getToken() === null) {
+                // Prompt the user to select a Google Account and ask for consent to share their data
+                // when establishing a new session.
+                tokenClient.requestAccessToken({ prompt: 'consent' });
+            } else {
+                // Skip display of account chooser and consent dialog for an existing session.
+                tokenClient.requestAccessToken({ prompt: '' });
+            }
+        }
+
+        /**
+         *  Sign out the user upon button click.
+         */
+        function handleSignoutClick() {
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token);
+                gapi.client.setToken('');
+                document.getElementById('content').innerText = '';
+                document.getElementById('authorize_button').innerText = 'Authorize';
+                document.getElementById('signout_button').style.visibility = 'hidden';
+            }
+        }
+
+        function updateScroll() {
+            var element = document.getElementById("output");
+            element.scrollTop = element.scrollHeight;
+        }
+
+        function _log(msg) {
+            $('#output').append(msg + '\n');
+            updateScroll();
+        }
+
+        /**
+         * Print files.
+         */
+        async function listFiles() {
+            var response = await gapi.client.drive.files.list({
+                'pageSize': 100,
+                'q': "name='nuottiarkisto'",
+                'fields': "files(id, name)"
+            });
+
+            var files = response?.result?.files;
+            if (files && files.length > 0) {
+                _log('Shared folder found: nuottiarkisto');
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    listDirs(file.id);
+                }
+            } else {
+                _log('ahjolalle -kansioo ei l&ouml;ytynyt');
+            }
+            //$('#kansiot').html('');
+        }
+
+
+        /**
+          * Print Dirs.
+          */
+        async function listDirs(id) {
+            var str = "'" + id + "'" + " in parents and mimeType = 'application/vnd.google-apps.folder'";
+            var response = await gapi.client.drive.files.list({
+                'pageSize': 100,
+                'orderBy': "name",
+                'q': str,
+                'fields': "nextPageToken, files(id, name)"
+            });
+
+            var files = response?.result?.files;
+            if (files && files.length > 0) {
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    _log('Nuottikansio: ' + file.name + '(' + id + ')');
+                    if (file.name.indexOf("alut") !== -1) {
+                        $('#alut').append('<div id="kansio" class="' + file.id + '" onClick="listNotes(' + "'" + file.id + "'" + ');">' + file.name + '</div>');
+                    }
+                    else if (file.name.indexOf("nuotit") !== -1) {
+                        $('#nuotit').append('<div id="kansio" class="' + file.id + '" onClick="listNotes(' + "'" + file.id + "'" + ');">' + file.name + '</div>');
+                    }
+                    else {
+                        $('#linkit').append('<div id="kansio" class="' + file.id + '" onClick="listNotes(' + "'" + file.id + "'" + ');">' + file.name + '</div>');
+                    }
+                }
+
+            } else {
+                _log('Ei kansioita.');
+            }
+        }
+
+
+
+        /* go through the parents to see element position */
+        function getPosition(element) {
+            var yPosition = 0;
+
+            while (element) {
+                yPosition += (element.offsetTop + element.clientTop);
+                element = element.offsetParent;
+            }
+
+            return yPosition;
+        }
+
+        /* calculate A4 proportions, and how many lines fit on to one page */
+        function linesOnPage() {
+            var width = $(document).width();
+            var a4Height = (width / 210) * 297;
+
+            if ($('#images div').length > 0) {
+                return Math.floor(a4Height / $('#images div').first().height());
+            }
+
+            return 1;
+        }
+
+        var columns = 2;
+
+        function songName(str) {
+            var s = str.slice(0, -4);
+            s = s.replace(/_/g, " ");
+            var rs = s.replace(/-/g, " ");
+            return rs.replace(/\w\S*/g, function (txt) {
+                return txt.charAt(0).toUpperCase()
+                    + txt.substr(1).toLowerCase();
+            });
+        }
+        /**
+         * Print Notes.
+         */
+        async function listNotes(id) {
+            var str = "'" + id + "'" + ' in parents';
+            var response = await gapi.client.drive.files.list({
+                'pageSize': 100,
+                'orderBy': "name",
+                'q': str,
+                'fields': "nextPageToken, files(id, name, webContentLink)"
+            });
+            $('#kansiot .selected').removeClass('selected');
+            $('.' + id).addClass('selected');
+            _log('  Selected kansio id: ' + id);
+            $('#images').html('');
+
+            var files = response?.result?.files;
+            if (files && files.length > 0) {
+                _log('  Files:' + files.length);
+
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+
+                    if (file.name.indexOf(".jpg") > -1) {
+
+                        _log(file.name + ' (' + file.id + ')');
+                        $('#images').append("<div><h2>" + songName(file.name) + '</h2>'
+                            + '<img src="https://drive.google.com/uc?export=view&id=' + file.id + '">');
+                    }
+                    if (file.name.indexOf(".pdf") > -1) {
+
+                        _log(file.name + ' (' + file.id + ')');
+                        $('#images').append("<div><h2>" + songName(file.name) + '</h2>'
+                            //    + '<p><iframe src="http://docs.google.com/gview?url='+file.webContentLink+'"></iframe></p>');
+                            + '<p><a  href="http://docs.google.com/gview?url=' + file.webContentLink + '">PDF-tiedosto</a></p>');
+                    }
+
+                }
+                setColumns(2, '50%');
+
+            } else {
+                _log('Ei kuvatiedostoja.');
+            }
+
+        }
+
+
+        /* Set the amount of columns, go through #images, and
+        */
+        function setColumns(newColumns, percent) {
+            if (columns == newColumns) {
+                return;
+            }
+            columns = newColumns;
+
+            $('#sarakkeet .selected').removeClass('selected');
+            $('#sarakkeet .sarake').each(function (index, sarake) {
+                //_log($(sarake).text() + '==' + (''+newColumns));
+                if ($(sarake).text() == ('' + newColumns)) {
+                    $(sarake).addClass('selected');
+                }
+
+            });
+
+            insertBreaks(newColumns, percent);
+            insertPageBreaks(newColumns);
+        }
+
+
+        var textClasses = {
+            '2': "20px",
+            '3': "16px",
+            '4': "13px"
+        };
+        /* calculate A4 proportions, and if last image is */
+        function insertBreaks(newColumns, percent) {
+            $('#images div').each(function (index, e) {
+                $(e).css('width', percent);
+                $(e).find('h2').css('font-size', textClasses[newColumns]);
+                $(e).removeClass('rivinvaihto');
+                $(e).removeClass('sivunvaihto');
+                if ((index) % newColumns == 0) {
+                    $(e).addClass('rivinvaihto');
+                }
+
+            });
+        }
+        function insertPageBreaks(newColumns) {
+            var lines = linesOnPage();
+            _log('Rivej&auml; yhdelle sivulle: ' + ('' + lines));
+
+            $('#images div').each(function (index, e) {
+                if ((index + 1) % (lines * newColumns) == 0) {
+                    _log('sivunvaihto t&auml;n j&auml;lkeen: ' + ('' + $(e).find('h2').text()));
+                    $(e).addClass('sivunvaihto');
+                }
+
+            });
+        }
+
+
+    </script>
+
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
+</head>
+
+
+
+
+
+
+
+<body>
+    <div id="authorize-div">
+        <h2>Pelimannin lupa</h2><span>
+            Jotta saadaan nuotit Googlen palvelimelta n&auml;kyviin, pit&auml;&auml; pelimannin
+            kirjautua Googleen n&auml;ill&auml; tiedoilla.
+            <table style="padding: 50px;">
+                <tr>
+                    <td style="padding: 20px;">Tunnus: (s&auml;hk&ouml;postiosoite)</td>
+                    <td> ahjolan.pelimanni</td>
+                    <td style="padding: 20px 40px;" rowspan=2>
+                        <button id="authorize_button" onclick="handleAuthClick(event)">
+                            Kirjaudu t&auml;st&auml;
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 20px;">Salasana:</td>
+                    <td>pienellä kirjoitettu juusto ja pelimannimestari</td>
+                </tr>
+            </table>
+        </span>
+        <!--Button for the user to click to initiate auth sequence -->
+
+    </div>
+    <div id="menu">
+        <div id="alut">
+            <h3>Paperille</h3>
+        </div>
+        <div id="nuotit">
+            <h3>PDF:i&auml; selaimeen</h3>
+        </div>
+        <div id="linkit">
+            <h3>Muuta</h3>
+            <a id="kansio" href="nuotit.html">tablettiselain</a>
+            <a id="kansio" href="peli.html">pelimannin muistipeli</a>
+        </div>
+    </div>
+
+    <div id="sarakkeet">
+        <div class="sarake" onclick="setColumns(4, '25%');">4</div>
+        <div class="sarake" onclick="setColumns(3, '33%');">3</div>
+        <div class="sarake selected" onclick="setColumns(2, '50%');">2</div>
+        <div class="info">palstat paperilla</div>
+    </div>
+
+
+
+    <div id="images"></div>
+
+    <div id="footer">
+        Google Driven REST-rajapinnoilla JavaScript sovellusta pelimannipiiriin, lvp 2016, 2017, 2022
+        <pre id="output"></pre>
+    </div>
+    <script>
+        $("#output").click(function () {
+            $(this).toggleClass("selected");
+        });
+    </script>
+
+</body>
+
+</html>

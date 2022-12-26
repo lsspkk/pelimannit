@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="fi-FI">
+
+<html>
+  <head>
+    <meta charset="utf-8">
+  <title>Ahjolan Pelimannien nuottiarkisto</title>
+  <meta name="description" content="Nuotteja kansanmuusikoille">
+    <meta name="keywords" content="HTML,CSS,XML,JavaScript">
+    <meta name="author" content="Lasse Pekkarinen">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+<link href="nuottiarkisto.css" rel="stylesheet" type="text/css"/>
+
+    <script type="text/javascript">
+      // Your Client ID can be retrieved from your project in the Google
+      // Developer Console, https://console.developers.google.com
+	  var CLIENT_ID =       '48076413225-l03lp5r9i7i6rstcpsvr0lk130p30q9p.apps.googleusercontent.com';
+
+      //var CLIENT_ID = '749750996776-e2iifnfcbba57gu0vs39r18t4k2gj5tg.apps.googleusercontent.com';
+
+      var SCOPES = ['https://www.googleapis.com/auth/drive.readonly'];
+
+      /**
+       * Check if current user has authorized this application.
+       */
+      function checkAuth() {
+        gapi.auth.authorize(
+          {
+            'client_id': CLIENT_ID,
+            'scope': SCOPES.join(' '),
+            'immediate': true
+          }, handleAuthResult);
+      }
+
+      /**
+       * Handle response from authorization server.
+       *
+       * @param {Object} authResult Authorization result.
+       */
+      function handleAuthResult(authResult) {
+        var authorizeDiv = document.getElementById('authorize-div');
+        if (authResult && !authResult.error) {
+          // Hide auth UI, then load client library.
+          authorizeDiv.style.display = 'none';
+          loadDriveApi();
+        } else {
+          // Show auth UI, allowing the user to initiate authorization by
+          // clicking authorize button.
+          authorizeDiv.style.display = 'inline';
+        }
+      }
+
+      /**
+       * Initiate auth flow in response to user clicking authorize button.
+       *
+       * @param {Event} event Button click event.
+       */
+      function handleAuthClick(event) {
+        gapi.auth.authorize(
+          {client_id: CLIENT_ID, scope: SCOPES, immediate: false},
+          handleAuthResult);
+        return false;
+      }
+
+      /**
+       * Load Drive API client library.
+       */
+      function loadDriveApi() {
+        gapi.client.load('drive', 'v3', listFiles);
+      }
+
+    function updateScroll(){
+        var element = document.getElementById("output");
+        element.scrollTop = element.scrollHeight;
+    }
+
+      function _log(msg) {
+        $('#output').append(msg + '\n');
+        updateScroll();
+      }
+
+      /**
+       * Print files.
+       */
+      function listFiles() {
+        var request = gapi.client.drive.files.list({
+            'pageSize': 100,
+            'q': "name='nuottiarkisto'",
+            'fields': "files(id, name)"
+          });
+          request.execute(function(resp) {
+            var files = resp.files;
+            if (files && files.length > 0) {
+            _log('Shared folder found: nuottiarkisto');
+              for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                listDirs(file.id);
+
+              }
+            } else {
+              _log('ahjolalle -kansioo ei l&ouml;ytynyt');
+            }
+ 	       //$('#kansiot').html('');
+
+          });
+      }
+
+
+     /**
+       * Print Dirs.
+       */
+      function listDirs(id) {
+        var str = "'" + id + "'" + " in parents and mimeType = 'application/vnd.google-apps.folder'";
+        var request = gapi.client.drive.files.list({
+            'pageSize': 100,
+            'orderBy': "name",
+            'q' : str,
+            'fields': "nextPageToken, files(id, name)"
+          });
+
+
+        request.execute(function(resp) {
+          var files = resp.files;
+          if (files && files.length > 0) {
+            for (var i = 0; i < files.length; i++) {
+              var file = files[i];
+              _log('Nuottikansio: ' +file.name + '('+id +')' );
+              if( file.name.indexOf("alut") !== -1 ) {
+                $('#alut').append('<div id="kansio" class="'+file.id+'" onClick="listNotes('+"'"+file.id+"'"+');">' + file.name + '</div>');
+              }
+              else if( file.name.indexOf("nuotit") !== -1 ) {
+                $('#nuotit').append('<div id="kansio" class="'+file.id+'" onClick="listNotes('+"'"+file.id+"'"+');">' + file.name + '</div>');
+              }
+              else  {
+                $('#linkit').append('<div id="kansio" class="'+file.id+'" onClick="listNotes('+"'"+file.id+"'"+');">' + file.name + '</div>');
+              }
+            }
+
+          } else {
+            _log('Ei kansioita.');
+          }
+        });
+      }
+
+
+
+      /* go through the parents to see element position */
+      function getPosition(element) {
+          var yPosition = 0;
+
+          while(element) {
+              yPosition += (element.offsetTop + element.clientTop);
+              element = element.offsetParent;
+          }
+
+          return yPosition ;
+      }
+
+      /* calculate A4 proportions, and how many lines fit on to one page */
+      function linesOnPage() {
+        var width = $(document).width();
+        var a4Height = (width/210) * 297;
+
+        if( $('#images div').length > 0 ) {
+          return Math.floor(a4Height / $('#images div').first().height());
+        }
+
+        return 1;
+    }
+
+      var columns = 1;
+
+      function songName(str) {
+        var s = str.slice(0, -4);
+        s = s.replace(/_/g , " ");
+        var rs = s.replace(/-/g , " ");
+        return rs.replace(/\w\S*/g, function(txt){
+              return txt.charAt(0).toUpperCase()
+                + txt.substr(1).toLowerCase();
+              });
+      }
+      /**
+       * Print Notes.
+       */
+      function listNotes(id) {
+        var str = "'" + id + "'" + ' in parents';
+        var request = gapi.client.drive.files.list({
+            'pageSize': 100,
+            'orderBy': "name",
+            'q' : str,
+            'fields': "nextPageToken, files(id, name, webContentLink)"
+          });
+          $('#kansiot .selected').removeClass('selected');
+          $('.'+ id).addClass('selected');
+          _log('  Selected kansio id: '+id );
+          $('#images').html('');
+
+          request.execute(function(resp) {
+            var files = resp.files;
+            if (files && files.length > 0) {
+	            _log('  Files:' + files.length);
+
+              for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+
+                if( file.name.indexOf(".jpg") > -1 ) {
+
+                  _log(file.name + ' (' + file.id + ')');
+                  $('#images').append("<div><h2>"+songName(file.name)+'</h2>'
+                        + '<img src="https://docs.google.com/uc?export=view&id='+file.id+'">');
+                }
+                if( file.name.indexOf(".pdf") > -1 ) {
+
+                  _log(file.name + ' (' + file.id + ')');
+                  $('#images').append("<div><h2>"+songName(file.name)+'</h2>'
+                    //    + '<p><iframe src="http://docs.google.com/gview?url='+file.webContentLink+'"></iframe></p>');
+                    + '<p><a  href="http://docs.google.com/gview?url='+file.webContentLink+'">PDF-tiedosto</a></p>');
+            }
+
+              }
+              setColumns(2, '50%');
+
+            } else {
+              _log('Ei kuvatiedostoja.');
+            }
+
+          });
+      }
+
+
+      /* Set the amount of columns, go through #images, and
+      */
+      function setColumns(newColumns, percent ) {
+      	if( columns == newColumns ) {
+      		return;
+      	}
+      	columns = newColumns;
+
+      	$('#sarakkeet .selected').removeClass('selected');
+  	    $('#sarakkeet .sarake').each( function( index, sarake ) {
+  	    	//_log($(sarake).text() + '==' + (''+newColumns));
+  	    	if(  $(sarake).text() == (''+ newColumns) ) {
+  	    		$(sarake).addClass('selected');
+  	    	}
+
+		    });
+
+    		insertBreaks(newColumns, percent);
+    		insertPageBreaks(newColumns);
+      }
+
+
+      var textClasses = {
+          '2' : "20px",
+          '3' : "16px",
+          '4' : "13px"
+      };
+      /* calculate A4 proportions, and if last image is */
+      function insertBreaks(newColumns, percent) {
+	    $('#images div').each( function( index, e ) {
+	    	$(e).css('width', percent);
+        $(e).find('h2').css('font-size', textClasses[newColumns]);
+	    	$(e).removeClass('rivinvaihto');
+	    	$(e).removeClass('sivunvaihto');
+	    	if( (index) % newColumns == 0 ) {
+		    	$(e).addClass('rivinvaihto');
+	    	}
+
+		    });
+      }
+      function insertPageBreaks(newColumns) {
+      	var lines = linesOnPage();
+	   	_log('Rivej&auml; yhdelle sivulle: ' + (''+lines));
+
+      	$('#images div').each( function( index, e ) {
+	    	if( (index+1) % (lines*newColumns) == 0 ) {
+			   	_log('sivunvaihto t&auml;n j&auml;lkeen: ' + (''+$(e).find('h2').text()));
+		    	$(e).addClass('sivunvaihto');
+	    	}
+
+		    });
+      }
+
+
+    </script>
+    <script src="https://apis.google.com/js/client.js?onload=checkAuth">
+    </script>
+  </head>
+
+
+
+
+
+
+
+
+
+
+
+
+  <body>
+<div id="authorize-div" >
+        <h2>Pelimannin lupa</h2><span>
+      Jotta saadaan nuotit Googlen palvelimelta n&auml;kyviin, pit&auml;&auml; pelimannin
+      kirjautua Googleen n&auml;ill&auml; tiedoilla.
+      <table style="padding: 50px;">
+      <tr><td style="padding: 20px;">Tunnus: (s&auml;hk&ouml;postiosoite)</td><td> ahjolan.pelimanni</td>
+      <td style="padding: 20px 40px;" rowspan=2><button id="authorize-button" onclick="handleAuthClick(event)">
+        Kirjaudu t&auml;st&auml;
+      </button>
+      </td></tr>
+      <tr><td style="padding: 20px;">Salasana:</td><td>oltermanni</td></tr>
+      </table>
+      </span>
+      <!--Button for the user to click to initiate auth sequence -->
+
+    </div>
+    <div id="menu">
+    <div id="alut">
+      <h3>Paperille</h3>
+    </div>
+     <div id="nuotit">
+       <h3>PDF:i&auml; selaimeen</h3>
+     </div>
+    <div id="linkit">
+       <h3>Muuta</h3>
+       <a id="kansio" href="nuotit.html">tablettiselain</a>
+       <a id="kansio" href="peli.html">pelimannin muistipeli</a>
+    </div>
+  </div>
+
+    <div id="sarakkeet">
+      <div class="sarake" onclick="setColumns(4, '25%');">4</div>
+      <div class="sarake" onclick="setColumns(3, '33%');">3</div>
+    <div class="sarake" onclick="setColumns(2, '50%');">2</div>
+    <div class="info">palstat paperilla</div>
+    </div>
+
+
+
+   <div id="images"></div>
+
+  <div id="footer">
+  Google Driven REST-rajapinnoilla JavaScript sovellusta pelimannipiiriin, lvp 2016, 2017
+   <pre id="output"></pre>
+ </div>
+<script>
+$("#output").click(function() {
+	$(this).toggleClass("selected");
+});
+</script>
+
+  </body>
+</html>

@@ -1,0 +1,145 @@
+
+body { font-family: 'Lato', sans-serif; }
+
+
+#footer {
+  width: 96%;
+  background: #ccc;
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  padding: 20px 2% 0;
+  font-size: 0.8em;
+}
+#output {
+  font-size: 60%;
+  display: block;
+  float: right;
+  top: 2px;
+  right: 6px;
+  color: #777;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 2px;
+  margin-top: -10px;
+  margin-right: 5px;
+  max-width: 200px;
+transition: all 0s ease-in-out;
+}
+#output.selected {
+  overflow-y: scroll;
+  width: auto;
+  padding: 30px;
+  font-size: 80%;
+  position: absolute;
+  background: #fff;
+  right: 5%;
+  width: 80%;
+  box-shadow: 0 0 30px rgba(0,0,0,0.3);
+  transition: all 0.7s ease-in-out;
+  float: none;
+  max-width: 1000px;
+  height: 300px;
+  top: -400px;
+}
+#images {
+width: 100%;
+clear: both;
+margin-top: 150px;
+}
+#images p {
+  margin: 0 0 8% 8%;
+}
+#images div {
+  display: inline-block;
+  width: 50%;
+}
+#images h2 {
+  font-family: arial, sans-serif;
+  font-size: 20px;
+  padding: 0px;
+  margin: 0 0 1% 5%;
+}
+#images img {
+  width: 90%;
+  height: auto;
+  margin: 0 5% 5%;
+}
+
+#menu {
+  display: flex;
+width: 80%;
+}
+#menu h3 {
+  margin: 5px 0 8px;
+}
+#alut, #nuotit, #linkit {
+  width: 30%;
+  height: 30px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+#kansio {
+  line-height: 30px;
+  background: #ddf;
+  padding: 0 10px;
+  display: block;
+  float:left;
+  border-radius: 3px;
+  border: 1px solid #cacae7;
+  margin: 1px;
+  text-decoration: none;
+color: #000;
+  width: 80%;
+  margin-left: 5%;
+}
+#kansio:hover, .sarake:hover {
+  cursor: pointer;
+  background: #cce;
+  box-shadow: 0 0 2px rgba(100,100,150, 0.6);
+  transition: all 0.2s ease-in-out;
+  border: 1px solid #aaaac7;
+
+}
+
+#kansio.selected, #sarakkeet .selected {
+background: #8f95c2;
+color: #fff;
+border-color: #abd;
+cursor: default;
+}
+
+#sarakkeet {
+  position: absolute;
+top: 15px;
+right: 15px;
+line-height: 33px;
+
+}
+
+.sarake {
+  line-height: 30px;
+height: 30px;
+  border-radius: 3px;
+  border: 1px solid #cacae7;
+  margin: 1px;
+display: block;
+float: right;
+font-weight: bold;
+padding: 0 10px;
+background: #cacae7;
+}
+
+.rivinvaihto {
+  clear: both;
+}
+/* floatit estää tän, mutta display: inline-block toimii hyvin.*/
+.sivunvaihto {
+  page-break-after: always;
+}
+
+@media print {
+#sarakkeet, #output, #menu, #footer {
+  display: none;
+}
+}
