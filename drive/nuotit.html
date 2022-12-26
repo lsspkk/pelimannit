@@ -9,41 +9,46 @@
     <script type="text/javascript">
 
         // default folder in Google Drive
-        var targetFolder = "alut monta tahtia";
+        const targetFolder = "alut monta tahtia";
 
 
         // ääkköset taulukko  
-        var aakkoset = [];
-        var activeLetters = {};
-        var sortedKeys = [];
+        let aakkoset = [];
+        let activeLetters = {};
+        let sortedKeys = [];
 
-        var charCodeRange = {
+        const charCodeRange = {
             start: 65,
             end: 90
         }
-        for (var cc = charCodeRange.start; cc <= charCodeRange.end; cc++) {
+        for (let cc = charCodeRange.start; cc <= charCodeRange.end; cc++) {
             aakkoset.push((String.fromCharCode(cc)));
         }
         //aakkoset.push("Å")
         aakkoset.push("Ä")
         aakkoset.push("Ö")
 
-        function scrollToAnchor(aid) {
-            var aTag = $("a[name='" + aid + "']");
-            $('html,body').animate({ scrollTop: aTag.offset().top }, 'slow');
+        function filterByLetter(c) {
+            const all = $("div[dataLetter]")
+            all.hide();
+            const chosen = $("div[dataLetter='" + c + "']")
+            chosen.show();
+        }
+        function showAll() {
+            const all = $("div[dataLetter]")
+            all.show();
         }
 
         function updateLetterMenu() {
-            var text = '';
-            var fLen = aakkoset.length;
-            var i;
-            for (i = 0; i < fLen; i++) {
+            let text = '';
+            for (let i = 0; i < aakkoset.length; i++) {
                 text += '<div id="letter"><table><tr><td ';
                 if (activeLetters[aakkoset[i].charAt(0)] == "yes") {
-                    text += 'onClick="scrollToAnchor(' + "'" + aakkoset[i] + "'" + ')" class="active"';
+                    text += 'onClick="filterByLetter(' + "'" + aakkoset[i] + "'" + ')" class="active"';
                 }
                 text += '>' + aakkoset[i] + '</td></tr></table></div>';
             }
+            text += '<div onClick="showAll();" class="showAll">Kaikki</div>'
             $('#letterMenu').html(text);
         }
 
@@ -102,7 +107,7 @@
             if (gapiInited && gisInited) {
                 document.getElementById('authorize_button').style.visibility = 'visible';
                 document.getElementById('authorize_div').style.display = 'inline';
-                
+
             }
         }
 
@@ -146,7 +151,7 @@
         }
 
         function updateScroll() {
-            var element = document.getElementById("output");
+            const element = document.getElementById("output");
             element.scrollTop = element.scrollHeight;
         }
 
@@ -161,12 +166,12 @@
                 'q': "name='" + targetFolder + "'",
                 'fields': "files(id, name)"
             });
-            console.debug({response})
-            var files = response.result?.files;
+            console.debug({ response })
+            const files = response.result?.files;
             if (files && files.length > 0) {
                 _log('L&ouml;ytyi ahjolalle-kansio!');
-                for (var i = 0; i < files.length; i++) {
-                    var file = files[i];
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
                     await listNotes(file.name, file.id);
                 }
             } else {
@@ -176,10 +181,10 @@
 
 
         function songName(str) {
-            var s = str.slice(0, -4);
+            let s = str.slice(0, -4);
             s = s.replace(/_/g, " ");
             s = s.charAt(0).toUpperCase() + s.slice(1);
-            var rs = s.replace(/-/g, " ");
+            let rs = s.replace(/-/g, " ");
             return rs.replace(/\w\S*/g, function (txt) {
                 return txt.charAt(0).toUpperCase()
                     + txt.substr(1).toLowerCase();
@@ -190,11 +195,12 @@
         // noteList
         // avain on songName(tiedostonnimi)+kansio
         // sisältö on taulukko id, tiedoston nimi, kansion nimi
-        var noteList = {};
-        function keys(obj) {
-            var keys = [];
+        let noteList = {};
 
-            for (var key in obj) {
+        function keys(obj) {
+            let keys = [];
+
+            for (const key in obj) {
                 if (obj.hasOwnProperty(key)) {
                     keys.push(key);
                 }
@@ -223,7 +229,7 @@
             $('#image').removeClass('selected');
         }
         function printNavigationLinks(i) {
-            var r = '<div id="close" onClick="closeClicked()">x</div>';
+            let r = '<div id="close" onClick="closeClicked()">x</div>';
 
             if (i > 0) {
                 r += '<div id="previous" onClick="previousClicked(' + (i - 1) + ');">&lt;</div>';
@@ -235,7 +241,7 @@
         }
 
         function showNote(key) {
-            var note = noteList[key];
+            const note = noteList[key];
             if (!note)
                 return;
             $("#image").html('<img src="https://docs.google.com/uc?export=view&id=' + note[0] + '"'
@@ -247,19 +253,23 @@
 
         //https://docs.google.com/uc?export=view&id='+id+
         function printNoteLink(id, fileName, folderName) {
-            $('#notes').append('<div id="noteLink" onClick="showNote(' + "'" + songName(fileName) + folderName + "'" + ')">'
+            const c = fileName.charAt(0).toUpperCase();
+            $('#notes').append('<div dataLetter="' + c +
+                '" onClick="showNote(' + "'" +
+                songName(fileName) + folderName + "'" +
+                ')"><div class="noteLink">'
                 + songName(fileName) + '</div><div class="notedesc">'
-                + folderName + '/' + fileName + '</div>');
+                + folderName + '/' + fileName + '</div></div>');
         }
 
         function updateNoteList() {
             $('#notes').html("");
             sortedKeys = keys(noteList).sort();
 
-            var previousChar = undefined;
-            for (var k = 0; k < sortedKeys.length; k++) {
-                var note = noteList[sortedKeys[k]];
-                var c = (note[1]).charAt(0).toUpperCase();
+            let previousChar = undefined;
+            for (let k = 0; k < sortedKeys.length; k++) {
+                let note = noteList[sortedKeys[k]];
+                const c = (note[1]).charAt(0).toUpperCase();
                 activeLetters[c] = "yes";
 
                 if (previousChar != undefined) {
@@ -279,7 +289,7 @@
          * Print Notes.
          */
         async function listNotes(folderName, id) {
-            var str = "'" + id + "'" + ' in parents';
+            const str = "'" + id + "'" + ' in parents';
             const response = await gapi.client.drive.files.list({
                 'pageSize': 100,
                 'orderBy': "name",
@@ -288,12 +298,12 @@
             });
 
             _log('  Printing folder id: ' + id);
-            var files = response.result?.files;
+            const files = response.result?.files;
             if (files && files.length > 0) {
                 _log('  Files:' + files.length);
 
-                for (var i = 0; i < files.length; i++) {
-                    var file = files[i];
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
 
                     if (file.name.indexOf(".jpg") > -1) {
 
