@@ -8,26 +8,31 @@ export default async function handler(
   res: NextApiResponse,
 ): Promise<void> {
   const { userId } = req.query;
+  if (!userId) {
+    res.status(400).json({ error: "userId missing" });
+    return;
+  }
+  const id = typeof userId === "string" ? userId : userId[0];
 
   try {
     await dbConnect();
     if (req.method === "PUT") {
-      const user: User = await UserModel.findById(userId[0]);
+      const user: User | null= await UserModel.findById(id).exec();
 
-      if (user === undefined) {
-        res.status(401).json({ error: `käyttäjää ${userId[0]} ei löydy` });
+      if (!user) {
+        res.status(401).json({ error: `käyttäjää ${id} ei löydy` });
       } else {
         if (req.body.username !== undefined && req.body.username !== user.username) {
           user["username"] = req.body.username;
         }
         console.log("updating user", user);
-        await user.save();
+        user.save && await user.save();
         res.status(201).json(user);
       }
     }
     if (req.method === "GET") {
       console.debug("GET user", userId);
-      const users: Array<UserInterface> = await UserModel.find({
+      const users: Array<User> = await UserModel.find({
         _id: userId,
       })
         .exec();
