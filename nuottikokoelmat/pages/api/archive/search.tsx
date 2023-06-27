@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { dbConnect } from "../../../models/dbConnect";
-import { User, UserModel } from "../../../models/user";
+import { Archive, ArchiveModel } from "../../../models/archive";
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,12 +10,11 @@ export default async function handler(
     await dbConnect();
 
     if (req.method === "POST") {
-      const search: User = req.body as User;
+      const search: Archive = req.body as Archive;
       console.debug("-------------", search);
-      const found = await UserModel.find(search);
+      const found = await ArchiveModel.find({archivename: search.archivename});
       console.debug("-------------", found);
       res.status(200).json(found);
-      res.send();
     } else {
       res.status(500).json({ error: "method not supported" });
     }

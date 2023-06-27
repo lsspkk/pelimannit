@@ -25,23 +25,25 @@ export interface Archive extends Partial<Document> {
   songs: Song[];
 }
 
+const RatingSchema = new Schema<Rating>({
+  rating: { type: Number, required: true },
+  userId: { type: String, required: true },
+})
+
+export const SongSchema = new Schema<Song>({
+  songname: { type: String, required: true },
+  path: { type: String, required: false },
+  url: { type: String, required: true },
+  dance: { type: String, required: false },
+  tempo: { type: String, required: false },
+  year: { type: Number, required: false },
+  rating: [RatingSchema],})
 export const ArchiveSchema = new Schema<Archive>({
   archivename: { type: String, required: true },
   created: { type: Date, required: true },
   modified: { type: Date, required: true },
   url: { type: String, required: false },
-  songs: new Schema<Song>({
-    songname: { type: String, required: true },
-    path: { type: String, required: false },
-    url: { type: String, required: true },
-    dance: { type: String, required: false },
-    tempo: { type: String, required: false },
-    year: { type: Number, required: false },
-    rating: new Schema<Rating>({
-      rating: { type: Number, required: true },
-      userId: { type: String, required: true },
-    }),
-  }),
+  songs: [SongSchema],
 });
 
 export const ArchiveModel = (mongoose.models?.Archive

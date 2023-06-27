@@ -1,18 +1,17 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"[typescript]": {
-			"editor.defaultFormatter": "dprint.dprint",
-			"editor.formatOnSave": true
-		},
-		"[typescriptreact]": {
-			"editor.defaultFormatter": "dprint.dprint",
-			"editor.formatOnSave": true
-		}
-	}
-	
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "dprint.dprint",
+      "editor.formatOnSave": true
+    }
+  }
 }
