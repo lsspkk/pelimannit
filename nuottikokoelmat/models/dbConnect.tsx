@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose'
 
 // const readyStates = {
 //   disconnected: 0,
@@ -7,21 +7,23 @@ import mongoose from "mongoose";
 //   disconnecting: 3,
 // }
 
-let pendingPromise = null;
+let pendingPromise: Promise<typeof mongoose> | null = null
 
 export const dbConnect = async (): Promise<void> => {
   if (mongoose.connection.readyState >= 1) {
-    return;
+    return
   }
   if (pendingPromise) {
-    await pendingPromise;
-    return;
+    await pendingPromise
+    return
   }
-  console.log("mongourl", process.env.MONGODB_URI);
-  pendingPromise = mongoose.connect(process.env.MONGODB_URI, {});
+  if (!process.env.MONGODB_URI) {
+    throw new Error('MONGODB_URI is not defined')
+  }
+  pendingPromise = mongoose.connect(process.env.MONGODB_URI, {})
   try {
-    await pendingPromise;
+    await pendingPromise
   } finally {
-    pendingPromise = null;
+    pendingPromise = null
   }
-};
+}

@@ -8,19 +8,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === 'POST') {
       const archive = req.body as Archive
-      console.debug('-------------', 'archive')
 
-      // const foundArchivename = await ArchiveModel.find({ archivename: archive.archivename }).exec()
-      // if (foundArchivename) {
-      //   res.status(400).json({ error: 'archivename already exists' })
-      //   return
-      // }
-      console.debug('-------------', '1')
+      const found = await ArchiveModel.find({ archivename: archive.archivename }).exec()
+      if (found.length > 0) {
+        res.status(400).json({ error: 'archivename already exists' })
+        return
+      }
+
       const newArchive = new ArchiveModel(archive)
-      console.debug('-------------', '1')
       const saved = await newArchive.save()
-      console.debug('-------------', saved)
       res.status(201).json(saved)
+    }
+    if (req.method === 'GET') {
+      const archives = await ArchiveModel.find({}).exec()
+      res.status(200).json([...archives])
     } else {
       res.status(500).json({ error: 'method not supported' })
     }

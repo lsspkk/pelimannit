@@ -1,38 +1,28 @@
-import useSWR from "swr";
-import { User } from "./user";
-import { Archive } from "./archive";
+import useSWR from 'swr'
+import { User } from './user'
+import { Archive } from './archive'
+import { Song } from './song'
 
-const fetcher = (input: RequestInfo, init: RequestInit) => fetch(input, init).then((res) => res.json());
+const fetcher = async (input: RequestInfo, init: RequestInit) => {
+  const res = await fetch(input, init)
 
-export interface UserData {
-  data: User;
-  isLoading: boolean;
-  isError: boolean;
+  // If the status code is not in the range 200-299,
+  // we still try to parse and throw it.
+  if (!res.ok) {
+    const error: Error & { info?: string; status?: number } = new Error('An error occurred while fetching the data.')
+    // Attach extra info to the error object.
+    error.info = await res.json()
+    error.status = res.status
+    throw error
+  }
+
+  return res.json()
 }
 
-export function useUser(id: string): UserData {
-  const { data, error } = useSWR("/api/user/" + id, fetcher);
+export const useUser = (id: string) => useSWR<User, Error>('/api/user/' + id, fetcher)
 
-  return {
-    data,
-    isLoading: !error && !data,
-    isError: error,
-  };
-}
+export const useArchives = () => useSWR<Archive[], Error>('/api/archive/', fetcher)
 
+export const useArchive = (id: string) => useSWR<Archive, Error>('/api/archive/' + id, fetcher)
 
-export interface ArchiveData {
-  data: Archive;
-  isLoading: boolean;
-  isError: boolean;
-}
-
-export function useArchive(id: string): ArchiveData {
-  const { data, error } = useSWR("/api/archive/" + id, fetcher);
-
-  return {
-    data,
-    isLoading: !error && !data,
-    isError: error,
-  };
-}
+export const useArchiveSongs = (id: string) => useSWR<Song[], Error>(`/api/archive/${id}/songs`, fetcher)
