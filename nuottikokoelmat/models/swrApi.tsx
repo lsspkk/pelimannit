@@ -2,6 +2,7 @@ import useSWR from 'swr'
 import { User } from './user'
 import { Archive } from './archive'
 import { Song } from './song'
+import { Collection } from './collection'
 
 const fetcher = async (input: RequestInfo, init: RequestInit) => {
   const res = await fetch(input, init)
@@ -26,3 +27,8 @@ export const useArchives = () => useSWR<Archive[], Error>('/api/archive/', fetch
 export const useArchive = (id: string) => useSWR<Archive, Error>('/api/archive/' + id, fetcher)
 
 export const useArchiveSongs = (id: string) => useSWR<Song[], Error>(`/api/archive/${id}/songs`, fetcher)
+
+export const useArchiveCollections = (id: string) =>
+  useSWR<Collection[], Error>(`/api/archive/${id}/collections`, fetcher)
+
+export const useCollection = (id: string) => useSWR<Collection, Error>(`/api/collection/${id}`, fetcher)
