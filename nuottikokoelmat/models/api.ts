@@ -5,6 +5,7 @@ export const removeChoice = async (id: Types.ObjectId): Promise<void> => {
   const response = await fetch(`/api/choice/${id}`, {
     method: 'DELETE',
   })
+  console.debug({ response })
   if (!response.ok) {
     throw new Error(response.statusText)
   }
