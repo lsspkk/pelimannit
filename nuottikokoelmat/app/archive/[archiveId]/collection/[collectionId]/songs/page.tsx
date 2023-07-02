@@ -18,7 +18,7 @@ export default function Home({
   const router = useRouter()
 
   // @ts-ignore
-  const { data: choises, isLoading: cIsLoading, error: cError } = useCollectionChoices(collectionId) || {}
+  const { data: choices, mutate, isLoading: cIsLoading, error: cError } = useCollectionChoices(collectionId) || {}
 
   // @ts-ignore
   const { data: songs, isLoading: aIsLoading, error: aError } = useArchiveSongs(archiveId) || {}
@@ -30,9 +30,11 @@ export default function Home({
     if (choice) {
       // remove choice
       await removeChoice(choice._id)
+      mutate(choices?.filter((c) => c._id !== choice._id))
     } else {
       // add choice
-      await addChoice(collectionId as unknown as Types.ObjectId, song._id)
+      const newChoice = await addChoice(collectionId as unknown as Types.ObjectId, song._id)
+      mutate([...(choices || []), newChoice])
     }
   }
   return (
@@ -49,7 +51,7 @@ export default function Home({
               <ChoiceSongCard
                 key={song._id}
                 song={song}
-                choice={choises?.find((c) => c.songId === song._id)}
+                choice={choices?.find((c) => c.songId === song._id)}
                 onChoiceClick={onChoiceClick}
               />
             ))}
@@ -80,7 +82,7 @@ const ChoiceSongCard = ({
   onChoiceClick: (song: Song, choice?: Choice) => void
 }) => {
   return (
-    <NpButtonCard onClick={() => onChoiceClick(song, choice)}>
+    <NpButtonCard>
       <div className='w-10/12 justify-self-start whitespace-nowrap'>
         <div className='text-xl'>{song.songname}</div>
         <div className='text-sm'>{displayPath(song)}</div>
