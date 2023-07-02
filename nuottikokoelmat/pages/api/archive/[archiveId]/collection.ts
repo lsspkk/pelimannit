@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { dbConnect } from '../../../../models/dbConnect'
 import { Collection, CollectionModel } from '../../../../models/collection'
+import mongoose from 'mongoose'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   try {
@@ -15,7 +16,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === 'POST') {
       const collection = req.body as Collection
-
+      collection.archiveId = id as unknown as mongoose.Types.ObjectId
+      console.log({ collection })
+      // throw new Error('test')
       const found = await CollectionModel.find({ collectionname: collection.collectionname, archiveId: id }).exec()
       if (found.length > 0) {
         res.status(400).json({ error: 'collectionname already exists' })
@@ -24,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const newCollection = new CollectionModel(collection)
       const saved = await newCollection.save()
-      res.status(201).json(saved)
+      res.status(201).json(JSON.parse(JSON.stringify(saved)))
     }
     if (req.method === 'GET') {
       const collections = await CollectionModel.find({}).exec()

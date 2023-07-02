@@ -3,6 +3,7 @@ import { User } from './user'
 import { Archive } from './archive'
 import { Song } from './song'
 import { Collection } from './collection'
+import { Choice } from './choice'
 
 const fetcher = async (input: RequestInfo, init: RequestInit) => {
   const res = await fetch(input, init)
@@ -29,6 +30,10 @@ export const useArchive = (id: string) => useSWR<Archive, Error>('/api/archive/'
 export const useArchiveSongs = (id: string) => useSWR<Song[], Error>(`/api/archive/${id}/songs`, fetcher)
 
 export const useArchiveCollections = (id: string) =>
-  useSWR<Collection[], Error>(`/api/archive/${id}/collections`, fetcher)
+  useSWR<Collection[], Error>(`/api/archive/${id}/collection`, fetcher)
 
 export const useCollection = (id: string) => useSWR<Collection, Error>(`/api/collection/${id}`, fetcher)
+
+export const useCollectionChoices = (id: string) => useSWR<Choice[], Error>(`/api/collection/${id}/choices`, fetcher)
+
+export const useCollectionSongs = (id: string) => useSWR<Song[], Error>(`/api/collection/${id}/songs`, fetcher)

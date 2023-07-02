@@ -4,8 +4,10 @@ import { Archive } from '@/models/archive'
 import { useArchive, useArchiveSongs } from '@/models/swrApi'
 import React, { useEffect, useState } from 'react'
 import { ahjola_pelimannit_songs } from '@/data/ahjola_pelimannit_songs'
-import mongoose from 'mongoose'
+import mongoose, { set } from 'mongoose'
 import { Song } from '@/models/song'
+import { NpTitle } from '@/components/NpTitle'
+import { NpButton } from '@/components/NpButton'
 
 export default function Home() {
   const [archive, setArchive] = useState<Archive | null>(null)
@@ -33,6 +35,20 @@ export default function Home() {
     void loadArchive()
   }, [])
 
+  const saveSongs = async (id: string) => {
+    const songs: Song[] = ahjola_pelimannit_songs.map((s) => ({
+      ...s,
+      archiveId: id as unknown as mongoose.Types.ObjectId,
+    }))
+    const response = await fetch('/api/song/array', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(songs),
+    })
+  }
+
   const saveArchive = async () => {
     const newArchive: Archive = {
       archivename: 'Ahjolan Pelimannit',
@@ -48,29 +64,23 @@ export default function Home() {
     })
     const data = await response.json()
 
-    if (response.ok) {
-      const songs: Song[] = ahjola_pelimannit_songs.map((s) => ({
-        ...s,
-        archiveId: data._id as mongoose.Types.ObjectId,
-      }))
-      const response2 = await fetch('/api/song/array', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(songs),
-      })
+    if (response.ok && data) {
+      setArchive(() => data as unknown as Archive)
     }
   }
 
   return (
-    <main className='flex flex-col items-center m-20 gap-4'>
-      <div className='z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex'>
-        <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' onClick={saveArchive}>
-          Tallenna ahjola_pelimannit_songs
-        </button>
+    <main className='flex flex-col items-center p-2 gap-4 h-full justify-start h-screen'>
+      <div className='justify-start items-center gap-4 flex-col flex'>
+        <NpTitle>Testitallennus, arkiston / kappaleiden luonti</NpTitle>
+        <NpButton onClick={saveArchive}>Tallenna Ahjolan pelimannit -arkisto</NpButton>
+        {archive && (
+          <NpButton onClick={() => saveSongs('649ca3f9016f78d03b5607f4')}>
+            Tallenna Ahjolan pelimannit -kappaleet
+          </NpButton>
+        )}
       </div>
-      <div className='flex justify-between w-full'>
+      <div className='flex justify-between w-full flex-col'>
         {archive === null && <div>ei ahjolan kokoelmaa haulla</div>}
         {archive && <div className='pre'>haettu kokoelma: {archive._id}</div>}
       </div>

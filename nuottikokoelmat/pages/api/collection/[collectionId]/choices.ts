@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { dbConnect } from '@/models/dbConnect'
-import { SongModel } from '@/models/song'
 import { ChoiceModel } from '@/models/choice'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
@@ -16,14 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'GET') {
       console.debug('GET songs for collection', id)
       const choices = await ChoiceModel.find({ collectionId: id }).exec()
-      if (choices.length === 0) {
-        res.status(200).json([])
-        return
-      }
-
-      const songIds = choices.map((choice) => choice.songId)
-      const songs = await SongModel.find({ _id: { $in: songIds } }).exec()
-      res.status(200).json([...songs])
+      res.status(200).json([...choices])
     }
   } catch (error) {
     console.log(error)
