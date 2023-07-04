@@ -9,6 +9,9 @@ import { Song } from '@/models/song'
 import { Choice } from '@/models/choice'
 import { addChoice, removeChoice } from '@/models/api'
 import { Types } from 'mongoose'
+import { NpButton } from '@/components/NpButton'
+import { NpTitle } from '@/components/NpTitle'
+import { NpBackButton } from '@/components/NpBackButton'
 
 export default function Home({
   params: { archiveId, collectionId },
@@ -45,8 +48,9 @@ export default function Home({
 
       {songs && (
         <div className='flex flex-col gap-4 w-full items-start'>
-          <div className='flex-col w-full items-start'>
-            <div>Valitse arkiston kappaleista</div>
+          <NpBackButton onClick={() => router.push(`/archive/${archiveId}/collection/${collectionId}`)} />
+          <div className='flex-col w-full items-start flex gap-1 -mt-4 mb-4'>
+            <NpTitle>Kappalevalinnat</NpTitle>
             {songs?.map((song) => (
               <ChoiceSongCard
                 key={song._id}
@@ -84,8 +88,8 @@ const ChoiceSongCard = ({
   return (
     <NpButtonCard>
       <div className='w-10/12 justify-self-start whitespace-nowrap'>
-        <div className='text-xl'>{song.songname}</div>
-        <div className='text-sm'>{displayPath(song)}</div>
+        <div className='text-md'>{song.songname}</div>
+        <div className='text-xs overflow-x-clip text-clip'>{displayPath(song)}</div>
       </div>
       <div className='2/12 justify-end flex justify-self-end flex-row w-full'>
         <IconButton onClick={() => onChoiceClick(song, choice)}>

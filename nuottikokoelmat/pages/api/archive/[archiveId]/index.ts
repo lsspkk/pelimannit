@@ -33,7 +33,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(404).json({})
         return
       }
-      console.debug('---------------', archives)
       const archive = JSON.parse(JSON.stringify(archives[0]))
       res.status(200).json(archive)
     }

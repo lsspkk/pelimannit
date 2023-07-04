@@ -6,6 +6,8 @@ import React from 'react'
 import { NpMain } from '@/components/NpMain'
 import { NpButtonCard } from '@/components/NpButtonCard'
 import { Song } from '@/models/song'
+import { on } from 'events'
+import { NpBackButton } from '../../../../components/NpBackButton'
 
 export default function Home({ params }: { params: { archiveId: string } }) {
   const router = useRouter()
@@ -21,7 +23,9 @@ export default function Home({ params }: { params: { archiveId: string } }) {
       {error && <div>Virhe: {JSON.stringify(error)}</div>}
       {data && (
         <div className='flex flex-col gap-4 w-full items-start'>
-          <div className='flex-col w-full items-start'>
+          <NpBackButton onClick={() => router.push(`/archive/${params.archiveId}`)} />
+
+          <div className='flex-col w-full items-start flex gap-2 -mt-4 mb-4'>
             <div>Arkiston kappaleet</div>
             {data?.map((song) => (
               <ArchiveSongCard key={song._id} song={song} />
@@ -49,9 +53,8 @@ const ArchiveSongCard = ({ song }: { song: Song }) => {
   return (
     <NpButtonCard onClick={() => router.push(song.url)}>
       <div className='flex-col'>
-        <div className='text-2xl'>{song.songname}</div>
-        <div className='text-sm'>{displayPath(song)}</div>
-        <div className='text-xs'>{JSON.stringify(song.path)}</div>
+        <div className='text-lg'>{song.songname}</div>
+        <div className='text-xs'>{displayPath(song)}</div>
       </div>
     </NpButtonCard>
   )

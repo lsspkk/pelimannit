@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await dbConnect()
     if (req.method === 'GET') {
-      console.debug('GET songs for collection', id)
+      console.debug('GET choices for collection', id)
       const choices = await ChoiceModel.find({ collectionId: id }).exec()
       res.status(200).json([...choices])
     }
