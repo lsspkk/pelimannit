@@ -6,6 +6,10 @@ export interface Choice extends Partial<Document> {
   created: Date
   index?: number
 }
+export interface ChoiceOrder {
+  songId: Types.ObjectId
+  index: number
+}
 
 export const ChoiceSchema = new Schema<Choice>({
   songId: { type: Schema.Types.ObjectId, required: true },

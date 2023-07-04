@@ -20,7 +20,14 @@ export const NpInput = ({
   return (
     <div className={`flex flex-col gap-4 ${className}`}>
       {label && <label>{label}</label>}
-      <input type={type} placeholder={placeholder} value={value} onChange={onChange} {...props} />
+      <input
+        className='px-[2px] focus:border focus:border-cyan-300 focus-visible:border-cyan-300 focus-visible:border'
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        {...props}
+      />
     </div>
   )
 }

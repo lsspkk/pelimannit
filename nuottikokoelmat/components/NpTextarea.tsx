@@ -17,7 +17,13 @@ export const NpTextArea = ({
 }) => {
   return (
     <div className={`flex flex-col gap-4 ${className}`}>
-      <textarea placeholder={placeholder} value={value} onChange={onChange} {...props} />
+      <textarea
+        className='px-[2px] focus:border focus:border-cyan-300 focus-visible:border-cyan-300 focus-visible:border'
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        {...props}
+      />
     </div>
   )
 }

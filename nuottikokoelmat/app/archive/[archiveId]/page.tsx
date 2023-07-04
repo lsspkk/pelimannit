@@ -4,7 +4,7 @@ import { NpButton } from '@/components/NpButton'
 import { useArchive, useArchiveCollections } from '@/models/swrApi'
 import { useRouter } from 'next/navigation'
 import React from 'react'
-import { NpTitle } from '../../../components/NpTitle'
+import { NpSubTitle, NpTitle } from '../../../components/NpTitle'
 import { Archive } from '@/models/archive'
 import { NpInput } from '@/components/NpInput'
 import { NpTextArea } from '@/components/NpTextarea'
@@ -29,7 +29,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
         <React.Fragment>
           <div className='flex flex-col gap-4 w-full items-start'>
             <div className='flex-col w-full items-start'>
-              <div>Arkisto</div>
+              <NpSubTitle>Arkisto</NpSubTitle>
               <div>{data.archivename}</div>
             </div>
             <NpButton onClick={() => router.push(`/archive/${data._id}/songs`)}>Kappaleet</NpButton>
@@ -49,8 +49,8 @@ export const Collections = ({ archiveId }: { archiveId: string }) => {
 
   console.debug(error)
   return (
-    <div className='flex flex-col gap-4 w-full pt-4 md:pt-12'>
-      <NpTitle>Kokoelmat</NpTitle>
+    <div className='flex flex-col gap-4 w-full pt-12 md:pt-24'>
+      <NpSubTitle>Kokoelmat</NpSubTitle>
 
       {!isLoading && !data && <div>Ei kokoelmia</div>}
 
@@ -108,13 +108,12 @@ export const AddCollection = ({ archiveId }: { archiveId: string }) => {
 
   return (
     <div className='flex flex-col gap-4 items-start'>
-      {!showAdd && <NpButton onClick={() => setShowAdd(true)}>Lisää kokoelma</NpButton>}
+      {!showAdd && <NpButton onClick={() => setShowAdd(true)}>Lisää</NpButton>}
       {showAdd && (
-        <div className='bg-gray-200 border-sm p-2 shadow-md'>
-          <NpTitle>Lisää kokoelma</NpTitle>
+        <div className='bg-gray-200 border-sm rounded-sm border-gray-400 border p-4 shadow-md w-full'>
           <div className='flex flex-col gap-4'>
-            <NpInput label='Nimi' value={collectionName} onChange={(e) => setCollectionName(e.target.value)} />
-            <NpTextArea label='Kuvaus' value={description} onChange={(e) => setDescription(e.target.value)} />
+            <NpInput placeholder='Nimi' value={collectionName} onChange={(e) => setCollectionName(e.target.value)} />
+            <NpTextArea placeholder='Kuvaus' value={description} onChange={(e) => setDescription(e.target.value)} />
 
             <div className='flex gap-2 justify-end'>
               <NpButton onClick={() => setShowAdd(false)}>Peruuta</NpButton>
