@@ -2,6 +2,7 @@ import { Collection, CollectionModel } from '../../../../models/collection'
 
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { dbConnect } from '../../../../models/dbConnect'
+import { ChoiceModel } from '@/models/choice'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const { collectionId } = req.query
@@ -34,6 +35,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return
       }
       const collection = JSON.parse(JSON.stringify(collections[0]))
+      res.status(200).json(collection)
+    }
+    if (req.method === 'DELETE') {
+      console.debug('DELETE collection', collectionId)
+
+      const choices = await ChoiceModel.deleteMany({ collectionId }).exec()
+      console.debug('deleted choices', choices)
+
+      const collection = await CollectionModel.findByIdAndDelete(collectionId).exec()
       res.status(200).json(collection)
     }
   } catch (error) {

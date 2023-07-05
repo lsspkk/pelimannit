@@ -16,7 +16,7 @@ export const NpButton = ({
   return (
     <button
       onClick={onClick}
-      className={`bg-gray-300 hover:border font-bold py-2 px-4 rounded ${className}`}
+      className={`bg-gray-300 border text-gray-800 py-2 px-4 rounded shadow-md ${className}`}
       disabled={disabled}
     >
       {inProgress && (
