@@ -5,14 +5,15 @@ import { useRouter } from 'next/navigation'
 import React, { useEffect } from 'react'
 import { NpMain } from '@/components/NpMain'
 import { Song } from '@/models/song'
-import { Choice, ChoiceOrder } from '@/models/choice'
+import { ChoiceOrder } from '@/models/choice'
 import { NpButton } from '@/components/NpButton'
 import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
-import mongoose from 'mongoose'
 import { NpBackButton } from '@/components/NpBackButton'
+import { NpIconButton } from '@/components/NpIconButton'
+import { PencilIcon } from '@/components/icons/PencilIcon'
 
 export default function Home({
   params: { archiveId, collectionId },
@@ -49,15 +50,25 @@ export default function Home({
         <div className='flex flex-col gap-4 w-full items-start -mt-4'>
           <NpBackButton onClick={() => router.push(`/archive/${archiveId}`)} />
 
-          <div className='flex-col w-full items-start flex'>
-            <div className='text-2xl'>{collection?.collectionname}</div>
-            <div className='text-sm mb-4'>{collection?.description}</div>
-            <NpButton onClick={() => router.push(`/archive/${archiveId}/collection/${collectionId}/songs`)}>
-              Kappalevalinnat
-            </NpButton>
+          <div className='w-full justify-between flex'>
+            <div className='w-full'>
+              <div className='text-2xl'>{collection?.collectionname}</div>
+              <div className='text-sm mb-4'>{collection?.description}</div>
+            </div>
+            <div className=''>
+              <NpIconButton
+                className='h-10 w-10 rounded-full pl-2 border  shadow-md'
+                onClick={() => router.push(`/archive/${archiveId}/collection/${String(collection._id)}/edit`)}
+              >
+                <PencilIcon className='w-6 h-6' />
+              </NpIconButton>
+            </div>
           </div>
+          <NpButton onClick={() => router.push(`/archive/${archiveId}/collection/${collectionId}/songs`)}>
+            Kappalevalinnat
+          </NpButton>
 
-          <div className='flex-col w-full items-start'>
+          <div className='flex-col w-full items-start flex'>
             {data && data.length > 0 && <DnDCollectionSongs songs={data} saveSongOrder={saveSongOrder} />}
             {data?.length === 0 && <div className='text-xs'>Ei valittuja kappaleita</div>}
           </div>

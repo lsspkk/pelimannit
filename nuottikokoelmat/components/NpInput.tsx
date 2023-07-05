@@ -18,7 +18,7 @@ export const NpInput = ({
   [x: string]: any
 }) => {
   return (
-    <div className={`flex flex-col gap-4 ${className}`}>
+    <div className={`flex flex-col gap-2 ${className}`}>
       {label && <label>{label}</label>}
       <input
         className='px-[2px] focus:border focus:border-cyan-300 focus-visible:border-cyan-300 focus-visible:border'
