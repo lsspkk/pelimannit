@@ -1,6 +1,6 @@
 'use client'
 
-import { useCollection, useCollectionSongs } from '@/models/swrApi'
+import { useArchiveUser, useCollection, useCollectionSongs, useIsArchiveManager } from '@/models/swrApi'
 import { useRouter } from 'next/navigation'
 import React, { useEffect } from 'react'
 import { NpMain } from '@/components/NpMain'
@@ -14,6 +14,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { NpBackButton } from '@/components/NpBackButton'
 import { NpIconButton } from '@/components/NpIconButton'
 import { PencilIcon } from '@/components/icons/PencilIcon'
+import { NpSubTitle, NpTitle } from '@/components/NpTitle'
+import { NpButtonCard } from '@/components/NpButtonCard'
 
 export default function Home({
   params: { archiveId, collectionId },
@@ -23,9 +25,9 @@ export default function Home({
   const router = useRouter()
 
   // @ts-ignore
-  const { data, mutate, isLoading, error } = useCollectionSongs(collectionId) || {}
-  const { data: collection, isLoading: collectionIsLoading, error: collectionError } = useCollection(collectionId) || {}
-  // lataa kokoelmat... :)
+  const { data, mutate, isLoading: isLoadingSongs, errorSongs } = useCollectionSongs(collectionId) || {}
+  const { data: collection, isLoading: isLoadingCollection, error: errorCollection } = useCollection(collectionId) || {}
+  const isManager = useIsArchiveManager(archiveId)
 
   const saveSongOrder = async (orderedSongs: ChoiceOrder[]) => {
     const res = await fetch(`/api/collection/${collectionId}/choice/order`, {
@@ -42,6 +44,9 @@ export default function Home({
     }
   }
 
+  const isLoading = isLoadingSongs || isLoadingCollection
+  const error = errorSongs || errorCollection
+
   return (
     <NpMain>
       {isLoading && <div>Ladataan...</div>}
@@ -52,24 +57,30 @@ export default function Home({
 
           <div className='w-full justify-between flex'>
             <div className='w-full'>
-              <div className='text-2xl'>{collection?.collectionname}</div>
+              <NpSubTitle>{collection?.collectionname}</NpSubTitle>
               <div className='text-sm mb-4'>{collection?.description}</div>
             </div>
-            <div className=''>
-              <NpIconButton
-                className='h-10 w-10 rounded-full pl-2 border  shadow-md'
-                onClick={() => router.push(`/archive/${archiveId}/collection/${String(collection._id)}/edit`)}
-              >
-                <PencilIcon className='w-6 h-6' />
-              </NpIconButton>
-            </div>
+            {isManager && (
+              <div className=''>
+                <NpButton
+                  className='flex items-center gap-2 px-[0.5em]'
+                  onClick={() => router.push(`/archive/${archiveId}/collection/${String(collection._id)}/edit`)}
+                >
+                  <PencilIcon className='w-6 h-6' />
+                  Muokkaa
+                </NpButton>
+              </div>
+            )}
           </div>
-          <NpButton onClick={() => router.push(`/archive/${archiveId}/collection/${collectionId}/songs`)}>
-            Kappalevalinnat
-          </NpButton>
+          {isManager && (
+            <NpButton onClick={() => router.push(`/archive/${archiveId}/collection/${collectionId}/songs`)}>
+              Kappalevalinnat
+            </NpButton>
+          )}
 
           <div className='flex-col w-full items-start flex'>
-            {data && data.length > 0 && <DnDCollectionSongs songs={data} saveSongOrder={saveSongOrder} />}
+            {data && data.length > 0 && isManager && <DnDCollectionSongs songs={data} saveSongOrder={saveSongOrder} />}
+            {data && data.length > 0 && !isManager && <CollectionSongs songs={data} />}
             {data?.length === 0 && <div className='text-xs'>Ei valittuja kappaleita</div>}
           </div>
         </div>
@@ -125,7 +136,7 @@ const DnDCollectionSongs = ({
       <SortableContext items={dndSongs.map((song, index) => `${index}`)} strategy={verticalListSortingStrategy}>
         <div className='flex flex-col gap-4 w-full items-start'>
           {dndSongs.map((song, index) => (
-            <CollectionSongCard key={song._id} id={`${index}`} song={song} index={index} />
+            <DnDCollectionSongCard key={song._id} id={`${index}`} song={song} index={index} />
           ))}
         </div>
       </SortableContext>
@@ -133,7 +144,31 @@ const DnDCollectionSongs = ({
   )
 }
 
-const CollectionSongCard = ({ song, index, id }: { song: Song; index: number; id: string }) => {
+const CollectionSongs = ({ songs }: { songs: Song[] }) => (
+  <div className='flex flex-col gap-4 w-full items-start'>
+    {songs.map((song, index) => (
+      <CollectionSongCard key={song._id} song={song} index={index} />
+    ))}
+  </div>
+)
+
+const CollectionSongCard = ({ song, index }: { song: Song; index: number }) => {
+  const router = useRouter()
+
+  return (
+    <NpButtonCard onClick={() => router.push(song.url)}>
+      <div className='flex-col w-1/12 flex items-center justify-center'>
+        <div className='text-amber-700 text-xl -ml-2'>{index + 1}</div>
+      </div>
+      <div className='flex-col w-11/12 flex'>
+        <div className='text-md'>{song.songname}</div>
+        <div className='text-xs overflow-clip text-clip whitespace-nowrap'>{displayPath(song)}</div>
+      </div>
+    </NpButtonCard>
+  )
+}
+
+const DnDCollectionSongCard = ({ song, index, id }: { song: Song; index: number; id: string }) => {
   const { listeners, setNodeRef, transform, transition } = useSortable({ id })
   const router = useRouter()
 
@@ -145,17 +180,19 @@ const CollectionSongCard = ({ song, index, id }: { song: Song; index: number; id
       }
     : undefined
   return (
-    <div ref={setNodeRef} className={`rounded-sm shadow-md p-2 flex border border-cyan-600 w-full`} style={style}>
-      <div className='flex-col w-10/12 flex' onClick={() => router.push(song.url)}>
-        <div className='text-md'>{song.songname}</div>
-        <div className='text-xs overflow-clip text-clip whitespace-nowrap'>{displayPath(song)}</div>
-      </div>
-      <div className='flex-col w-2/12 items-end flex justify-center' {...listeners}>
-        <div className='flex flex-col items-center justify-center'>
-          <div className='text-xs '>{index + 1}</div>
-          <DragIcon />
+    <div ref={setNodeRef} className='w-full' style={style}>
+      <NpButtonCard>
+        <div className='flex-col w-10/12 flex' onClick={() => router.push(song.url)}>
+          <div className='text-md'>{song.songname}</div>
+          <div className='text-xs overflow-clip text-clip whitespace-nowrap'>{displayPath(song)}</div>
         </div>
-      </div>
+        <div className='flex-col w-2/12 items-end flex justify-center' {...listeners}>
+          <div className='flex flex-col items-center justify-center'>
+            <div className='text-xs '>{index + 1}</div>
+            <DragIcon />
+          </div>
+        </div>
+      </NpButtonCard>
     </div>
   )
 }
