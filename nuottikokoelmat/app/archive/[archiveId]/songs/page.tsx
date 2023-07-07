@@ -52,7 +52,7 @@ const ArchiveSongCard = ({ song }: { song: Song }) => {
 
   return (
     <NpButtonCard onClick={() => router.push(song.url)}>
-      <div className='flex-col'>
+      <div className='overflow-x-clip text-clip w-full'>
         <div className='text-lg'>{song.songname}</div>
         <div className='text-xs'>{displayPath(song)}</div>
       </div>
