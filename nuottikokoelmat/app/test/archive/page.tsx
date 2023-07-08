@@ -1,42 +1,41 @@
 'use client'
 
 import { Archive } from '@/models/archive'
-import { useArchive, useArchiveSongs } from '@/models/swrApi'
-import React, { useEffect, useState } from 'react'
-import { ahjola_pelimannit_songs } from '@/data/ahjola_pelimannit_songs'
-import mongoose, { set } from 'mongoose'
-import { Song } from '@/models/song'
-import { NpTitle } from '@/components/NpTitle'
+import { useArchiveSongs } from '@/models/swrApi'
+import React, { useState } from 'react'
+import mongoose from 'mongoose'
+import { Song, SongNoArchiveId } from '@/models/song'
+import { NpSubTitle, NpTitle } from '@/components/NpTitle'
 import { NpButton } from '@/components/NpButton'
+import { NpInput } from '@/components/NpInput'
+import { NpTextArea } from '@/components/NpTextarea'
 
 export default function Home() {
   const [archive, setArchive] = useState<Archive | null>(null)
+  const [searchName, setSearchName] = useState<string>('')
+  const [createPassword, setCreatePassword] = useState<string>('')
+  const [message, setMessage] = useState<string>('')
+  const [songsJson, setSongsJson] = useState<string>('')
 
-  const { data, isLoading, error: archiveError } = useArchive('649ca3f9016f78d03b5607f4')
-
-  const loadArchive = async () => {
+  const searchArchive = async () => {
     const response = await fetch('/api/archive/search', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ archivename: 'Ahjolan Pelimannit' }),
+      body: JSON.stringify({ archivename: searchName }),
     })
     try {
       const data = await response.json()
       console.log(data)
-      setArchive(data)
+      setArchive(data[0])
     } catch (error) {
       console.log(error)
     }
   }
 
-  useEffect(() => {
-    void loadArchive()
-  }, [])
-
   const saveSongs = async (id: string) => {
-    const songs: Song[] = ahjola_pelimannit_songs.map((s) => ({
+    const songs: Song[] = JSON.parse(songsJson).map((s: SongNoArchiveId) => ({
       ...s,
       archiveId: id as unknown as mongoose.Types.ObjectId,
     }))
@@ -47,13 +46,20 @@ export default function Home() {
       },
       body: JSON.stringify(songs),
     })
+    if (response.ok) {
+      setMessage('Kappaleet tallennettu')
+    } else {
+      setMessage('Kappaleiden tallennus epäonnistui')
+    }
+    setTimeout(() => setMessage(''), 3000)
   }
 
   const saveArchive = async () => {
-    const newArchive: Archive = {
-      archivename: 'Ahjolan Pelimannit',
+    const newArchive: Archive & { createPassword: string } = {
+      archivename: searchName,
       created: new Date(),
       modified: new Date(),
+      createPassword: createPassword,
     }
     const response = await fetch('/api/archive', {
       method: 'POST',
@@ -66,37 +72,49 @@ export default function Home() {
 
     if (response.ok && data) {
       setArchive(() => data as unknown as Archive)
+      setMessage('Arkisto luotu')
+    } else {
+      setMessage('Arkiston luonti epäonnistui')
     }
+    setTimeout(() => setMessage(''), 3000)
   }
 
   return (
     <main className='flex flex-col items-center p-2 gap-4 h-full justify-start h-screen'>
       <div className='justify-start items-center gap-4 flex-col flex'>
-        <NpTitle>Testitallennus, arkiston / kappaleiden luonti</NpTitle>
-        <NpButton onClick={saveArchive}>Tallenna Ahjolan pelimannit -arkisto</NpButton>
+        <NpTitle>Testi</NpTitle>
+        {message && <div className='my-5'>{message}</div>}
+        <NpInput label='Arkiston nimi' value={searchName} onChange={(e) => setSearchName(e.target.value)} />
+        <NpButton onClick={searchArchive}>Hae</NpButton>
+
+        <NpSubTitle>Arkiston luonti</NpSubTitle>
+        <NpInput label='Luonnin salasana' value={createPassword} onChange={(e) => setCreatePassword(e.target.value)} />
+        <NpButton onClick={saveArchive}>Luo arkisto</NpButton>
+
         {archive && (
-          <NpButton onClick={() => saveSongs('649ca3f9016f78d03b5607f4')}>
-            Tallenna Ahjolan pelimannit -kappaleet
-          </NpButton>
+          <div className='flex-col justify-between w-full gap-2'>
+            <NpSubTitle>Kappaleiden tallennus</NpSubTitle>
+            <NpTextArea
+              label='KappaleetJSON'
+              value={songsJson}
+              onChange={(e) => setSongsJson(e.target.value)}
+              placeholder='Copy pastaa tähän kappaleiden lista'
+            />
+            <NpButton onClick={() => saveSongs(archive?._id)}>Tallenna kappaleet</NpButton>
+          </div>
         )}
-      </div>
-      <div className='flex justify-between w-full flex-col'>
-        {archive === null && <div>ei ahjolan kokoelmaa haulla</div>}
-        {archive && <div className='pre'>haettu kokoelma: {archive._id}</div>}
       </div>
 
       <div className='flex-col justify-between w-full gap-2'>
-        {data === null && <div>ei ahjolan kokoelmaa</div>}
-        {isLoading && <div>ladataan...</div>}
-        {archiveError && <div>virhe</div>}
-        {data && <SimpleArchiveList archive={data} />}
+        {archive === null && <div>Ei ladattua arkistoa.</div>}
+        {archive && <SimpleArchiveList archive={archive} />}
       </div>
     </main>
   )
 }
 
 const SimpleArchiveList = ({ archive }: { archive: Archive }) => {
-  const { data: songs } = useArchiveSongs('649ca3f9016f78d03b5607f4')
+  const { data: songs } = useArchiveSongs(String(archive._id))
 
   return (
     <div className='flex-col justify-between w-full gap-2'>

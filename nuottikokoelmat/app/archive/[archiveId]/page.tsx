@@ -118,7 +118,7 @@ const Collections = ({ archiveId }: { archiveId: string }) => {
 
       {showAddCollection && <AddCollection archiveId={archiveId} onClose={() => setShowAddCollection(false)} />}
 
-      {!isLoading && !data && <div>Ei kokoelmia</div>}
+      {!isLoading && data?.length === 0 && <div>Ei kokoelmia</div>}
       {isLoading && <div>Ladataan...</div>}
       {error && <div>Virhe: {JSON.stringify(error)}</div>}
       {data && (
