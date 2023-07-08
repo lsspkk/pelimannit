@@ -7,6 +7,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await dbConnect()
 
     if (req.method === 'POST') {
+      if (!process.env.CREATE_PASSWORD) {
+        res.status(401).json({ error: 'go away' })
+        return
+      }
+
       const songs = req.body as Song[]
       const newSongs = songs.map((song) => new SongModel(song))
       const saved = await SongModel.insertMany(newSongs)
