@@ -6,7 +6,7 @@ export const NpIconButton = ({
   ...props
 }: { children: React.ReactNode } & HTMLAttributes<HTMLButtonElement>) => {
   return (
-    <button className='rounded-full bg-amber-50 px-1 -my-1 self-center' {...props}>
+    <button className='rounded-full bg-amber-50 p-1 self-center' {...props}>
       {children}
     </button>
   )

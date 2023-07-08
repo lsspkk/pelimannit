@@ -7,7 +7,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await dbConnect()
 
     if (req.method === 'POST') {
-      const archive = req.body as Archive
+      const { createPassword, ...archive } = req.body as Archive & { createPassword: string }
+
+      if (createPassword !== process.env.CREATE_PASSWORD || !createPassword) {
+        res.status(401).json({ error: 'wrong password' })
+        return
+      }
 
       const found = await ArchiveModel.find({ archivename: archive.archivename }).exec()
       if (found.length > 0) {

@@ -14,7 +14,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await dbConnect()
     if (req.method === 'GET') {
       console.debug('GET archive', archiveId)
-      const songs = await SongModel.find({ archiveId: id }).exec()
+      const songs = await (
+        await SongModel.find({ archiveId: id }).exec()
+      ).sort((a, b) => {
+        return a.path.localeCompare(b.path) * -1 || a.songname.localeCompare(b.songname)
+      })
       res.status(200).json([...songs])
     }
   } catch (error) {
