@@ -1,8 +1,8 @@
 'use client'
 
-import { useCollectionChoices, useArchiveSongs } from '@/models/swrApi'
+import { useCollectionChoices, useArchiveSongs, useCollectionSongs } from '@/models/swrApi'
 import { useRouter } from 'next/navigation'
-import React, { HTMLAttributes } from 'react'
+import React from 'react'
 import { NpMain } from '@/components/NpMain'
 import { NpButtonCard } from '@/components/NpButtonCard'
 import { Song } from '@/models/song'
@@ -12,6 +12,7 @@ import { Types } from 'mongoose'
 import { NpButton } from '@/components/NpButton'
 import { NpTitle } from '@/components/NpTitle'
 import { NpBackButton } from '@/components/NpBackButton'
+import { NpIconButton } from '../../../../../../components/NpIconButton'
 
 export default function Home({
   params: { archiveId, collectionId },
@@ -22,6 +23,7 @@ export default function Home({
 
   // @ts-ignore
   const { data: choices, mutate, isLoading: cIsLoading, error: cError } = useCollectionChoices(collectionId) || {}
+  const { data: collectionSongs, mutate: mutateCollectionSongs } = useCollectionSongs(collectionId) || {}
 
   // @ts-ignore
   const { data: songs, isLoading: aIsLoading, error: aError } = useArchiveSongs(archiveId) || {}
@@ -34,10 +36,12 @@ export default function Home({
       // remove choice
       await removeChoice(choice._id)
       mutate(choices?.filter((c) => c._id !== choice._id))
+      mutateCollectionSongs(collectionSongs?.filter((s) => s._id !== song._id))
     } else {
       // add choice
       const newChoice = await addChoice(collectionId as unknown as Types.ObjectId, song._id)
       mutate([...(choices || []), newChoice])
+      mutateCollectionSongs([...(collectionSongs || []), song])
     }
   }
   return (
@@ -92,21 +96,11 @@ const ChoiceSongCard = ({
         <div className='text-xs overflow-x-clip text-clip'>{displayPath(song)}</div>
       </div>
       <div className='2/12 justify-end flex justify-self-end flex-row w-full'>
-        <IconButton onClick={() => onChoiceClick(song, choice)}>
+        <NpIconButton onClick={() => onChoiceClick(song, choice)}>
           {choice ? <Star className='text-yellow-500' fill='#ffaa00' /> : <Star />}
-        </IconButton>
+        </NpIconButton>
       </div>
     </NpButtonCard>
-  )
-}
-
-// create react component that has a round iconbutton and has the icon as a children
-// use it in the song card
-const IconButton = ({ children, ...props }: { children: React.ReactNode } & HTMLAttributes<HTMLButtonElement>) => {
-  return (
-    <button className='rounded-full bg-gray-200 p-2 self-center' {...props}>
-      {children}
-    </button>
   )
 }
 

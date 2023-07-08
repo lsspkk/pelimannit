@@ -10,6 +10,8 @@ export interface Song extends Partial<Document> {
   archiveId: Types.ObjectId
 }
 
+export type SongNoArchiveId = Omit<Song, 'archiveId'>
+
 export const SongSchema = new Schema<Song>({
   songname: { type: String, required: true },
   path: { type: String, required: false },

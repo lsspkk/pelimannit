@@ -16,7 +16,8 @@ export const NpTextArea = ({
   [x: string]: any
 }) => {
   return (
-    <div className={`flex flex-col gap-4 ${className}`}>
+    <div className={`flex flex-col gap-2 ${className}`}>
+      {label && <label className=''>{label}</label>}
       <textarea
         className='px-[2px] focus:border focus:border-cyan-300 focus-visible:border-cyan-300 focus-visible:border'
         placeholder={placeholder}

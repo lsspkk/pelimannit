@@ -9,6 +9,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'POST') {
       const user = req.body as User
 
+      if (!process.env.CREATE_PASSWORD) {
+        res.status(401).json({ error: 'go away' })
+        return
+      }
+
       const foundUsername = await UserModel.find({ username: user.username })
       if (foundUsername) {
         res.status(400).json({ error: 'username already exists' })

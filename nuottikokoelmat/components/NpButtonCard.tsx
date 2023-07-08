@@ -1,18 +1,21 @@
 'use client'
 
-export const NpButtonCard = ({
+import React from 'react'
+
+const ButtonCard = ({
   children,
-  onClick,
   ref,
+  ...props
 }: {
-  children: React.ReactNode
-  onClick?: () => void
+  children?: React.ReactNode
   ref?: React.Ref<HTMLDivElement>
 } & React.HTMLAttributes<HTMLDivElement>) => {
-  const hover = onClick ? 'hover:bg-cyan-600 hover:text-white cursor-pointer' : ''
+  const hover = props.onClick ? 'hover:bg-cyan-600 hover:text-white cursor-pointer' : ''
   return (
-    <div ref={ref} onClick={onClick} className={`rounded-sm shadow-md p-2 flex border border-cyan-600 w-full ${hover}`}>
+    <div ref={ref} {...props} className={`rounded-sm shadow-md p-2 flex border border-amber-700 w-full ${hover}`}>
       {children}
     </div>
   )
 }
+
+export const NpButtonCard = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(ButtonCard)

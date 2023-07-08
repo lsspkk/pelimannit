@@ -1,25 +1,22 @@
 'use client'
 
 import { NpButton } from '@/components/NpButton'
-import { useArchive, useArchiveCollections } from '@/models/swrApi'
+import { useArchive, useArchiveCollections, useArchiveUser, useIsArchiveManager } from '@/models/swrApi'
 import { useRouter } from 'next/navigation'
 import React from 'react'
-import { NpSubTitle, NpTitle } from '../../../components/NpTitle'
-import { Archive } from '@/models/archive'
-import { NpInput } from '@/components/NpInput'
-import { NpTextArea } from '@/components/NpTextarea'
+import { NpSubTitle } from '../../../components/NpTitle'
 import { NpMain } from '@/components/NpMain'
-import { Collection } from '@/models/collection'
-import mongoose from 'mongoose'
 import { NpButtonCard } from '@/components/NpButtonCard'
+import { AddCollection } from './AddCollection'
+import { NpIconButton } from '@/components/NpIconButton'
+import { NpInput } from '@/components/NpInput'
+import { set } from 'mongoose'
 
 export default function Home({ params }: { params: { archiveId: string } }) {
   const router = useRouter()
 
   // @ts-ignore
   const { data, isLoading, error } = useArchive(params.archiveId) || {}
-
-  // lataa kokoelmat... :)
 
   return (
     <NpMain>
@@ -34,6 +31,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
             </div>
             <NpButton onClick={() => router.push(`/archive/${data._id}/songs`)}>Kappaleet</NpButton>
           </div>
+          <StartManaging archiveId={params.archiveId} />
           <Collections archiveId={data._id} />
         </React.Fragment>
       )}
@@ -41,87 +39,103 @@ export default function Home({ params }: { params: { archiveId: string } }) {
   )
 }
 
-export const Collections = ({ archiveId }: { archiveId: string }) => {
-  const router = useRouter()
+const StartManaging = ({ archiveId }: { archiveId: string }) => {
+  const [showLogin, setShowLogin] = React.useState(false)
+  const [username, setUsername] = React.useState('')
+  const [password, setPassword] = React.useState('')
+  const [error, setError] = React.useState('')
+  const { data, mutate } = useArchiveUser(archiveId)
 
-  // @ts-ignore
-  const { data, isLoading, error } = useArchiveCollections(archiveId) || {}
+  const onStart = async () => {
+    const response = await fetch(`/api/archive/${archiveId}/manage/start`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+    })
+    if (response.ok) {
+      setShowLogin(false)
+      mutate({ archiveId, username })
+    } else {
+      setError('Virheellinen käyttäjätunnus tai salasana')
+    }
+  }
 
-  console.debug(error)
+  const onStop = async () => {
+    const response = await fetch(`/api/archive/${archiveId}/manage/stop`)
+    if (response.ok) {
+      mutate({ archiveId: '', username: '' })
+    } else {
+      console.error('Failed to stop managing archive', response)
+    }
+  }
+
   return (
-    <div className='flex flex-col gap-4 w-full pt-12 md:pt-24'>
-      <NpSubTitle>Kokoelmat</NpSubTitle>
+    <div className='flex-col flex gap-4 w-full items-end'>
+      {!showLogin && data?.archiveId === archiveId && (
+        <NpButton className='-mt-10' onClick={onStop}>
+          Lopeta hallinnointi
+        </NpButton>
+      )}
+      {!showLogin && data?.archiveId !== archiveId && (
+        <NpButton className='w-28 -mt-10' onClick={() => setShowLogin(true)}>
+          Kirjaudu
+        </NpButton>
+      )}
+      {showLogin && (
+        <div className='flex flex-col gap-4 w-full pt-4 md:pt-14 max-w-sm'>
+          <div>Kirjaudu hallinnoimaan arkistoa</div>
+          <NpInput placeholder='Käyttäjätunnus' value={username} onChange={(e) => setUsername(e.target.value)} />
+          <NpInput placeholder='Salasana' value={password} onChange={(e) => setPassword(e.target.value)} />
 
-      {!isLoading && !data && <div>Ei kokoelmia</div>}
-
-      <AddCollection archiveId={archiveId} />
-
-      {isLoading && <div>Ladataan...</div>}
-      {error && <div>Virhe: {JSON.stringify(error)}</div>}
-      {data && (
-        <div className='flex flex-col gap-4'>
-          {data?.map((collection) => (
-            <NpButtonCard
-              onClick={() => router.push(`/archive/${archiveId}/collection/${collection._id}`)}
-              key={collection._id}
-            >
-              <div>
-                <div>{collection.collectionname}</div>
-                <div>{collection.description}</div>
-              </div>
-            </NpButtonCard>
-          ))}
+          {error && <div className='text-red-800'>{error}</div>}
+          <div className='flex flex-row gap-4 justify-end'>
+            <NpButton onClick={() => setShowLogin(false)}>Peruuta</NpButton>
+            <NpButton onClick={onStart}>Kirjaudu</NpButton>
+          </div>
         </div>
       )}
     </div>
   )
 }
 
-export const AddCollection = ({ archiveId }: { archiveId: string }) => {
+const Collections = ({ archiveId }: { archiveId: string }) => {
   const router = useRouter()
-  const [collectionName, setCollectionName] = React.useState('')
-  const [description, setDescription] = React.useState('')
-  const [inProgress, setInProgress] = React.useState(false)
-  const [showAdd, setShowAdd] = React.useState(false)
 
-  const addCollection = async () => {
-    setInProgress(true)
+  const [showAddCollection, setShowAddCollection] = React.useState(false)
+  // @ts-ignore
+  const { data, isLoading, error } = useArchiveCollections(archiveId) || {}
 
-    const newCollection: Collection = {
-      collectionname: collectionName,
-      description: description,
-      modified: new Date(),
-      created: new Date(),
-      archiveId: archiveId as unknown as mongoose.Types.ObjectId,
-    }
-    const response = await fetch(`/api/archive/${archiveId}/collection`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newCollection),
-    })
-    const data = await response.json()
-    setInProgress(false)
-    router.push(`/archive/${archiveId}/collection/${data._id}`)
-  }
+  const isManager = useIsArchiveManager(archiveId)
 
   return (
-    <div className='flex flex-col gap-4 items-start'>
-      {!showAdd && <NpButton onClick={() => setShowAdd(true)}>Lisää</NpButton>}
-      {showAdd && (
-        <div className='bg-gray-200 border-sm rounded-sm border-gray-400 border p-4 shadow-md w-full'>
-          <div className='flex flex-col gap-4'>
-            <NpInput placeholder='Nimi' value={collectionName} onChange={(e) => setCollectionName(e.target.value)} />
-            <NpTextArea placeholder='Kuvaus' value={description} onChange={(e) => setDescription(e.target.value)} />
+    <div className='flex flex-col gap-4 w-full pt-12 md:pt-24'>
+      <div className='flex flex-row w-full justify-between items-center'>
+        <NpSubTitle>Kokoelmat</NpSubTitle>
+        {!showAddCollection && isManager && <NpButton onClick={() => setShowAddCollection(true)}>Lisää</NpButton>}
+      </div>
 
-            <div className='flex gap-2 justify-end'>
-              <NpButton onClick={() => setShowAdd(false)}>Peruuta</NpButton>
-              <NpButton onClick={addCollection} inProgress={inProgress}>
-                Lisää
-              </NpButton>
+      {showAddCollection && <AddCollection archiveId={archiveId} onClose={() => setShowAddCollection(false)} />}
+
+      {!isLoading && data?.length === 0 && <div>Ei kokoelmia</div>}
+      {isLoading && <div>Ladataan...</div>}
+      {error && <div>Virhe: {JSON.stringify(error)}</div>}
+      {data && (
+        <div className='flex flex-col gap-4'>
+          {data?.map((collection) => (
+            <div className='flex flex-row w-full gap-4 items-center'>
+              <NpButtonCard
+                key={collection._id}
+                onClick={() => router.push(`/archive/${archiveId}/collection/${collection._id}`)}
+              >
+                <div className='w-full'>
+                  <div>{collection.collectionname}</div>
+                  <div>{collection.description}</div>
+                </div>
+              </NpButtonCard>
             </div>
-          </div>
+          ))}
         </div>
       )}
     </div>
