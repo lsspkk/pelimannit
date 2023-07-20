@@ -37,7 +37,7 @@ export const AddCollection = ({ archiveId, onClose }: { archiveId: string; onClo
     } else {
       const saved = await response.json()
       mutate([...(data || []), saved])
-      router.push(`/archive/${archiveId}`)
+      setTimeout(() => router.push(`/archive/${archiveId}`), 200)
     }
     setInProgress(false)
   }

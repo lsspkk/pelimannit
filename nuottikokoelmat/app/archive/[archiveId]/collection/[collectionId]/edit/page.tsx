@@ -39,7 +39,7 @@ export default function Home({
       },
       body: JSON.stringify(newCollection),
     })
-    console.debug('Response', response)
+
     if (response.ok) {
       const data = await response.json()
       mutate(data)

@@ -34,6 +34,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
       const newCollection = new CollectionModel(collection)
       const saved = await newCollection.save()
       res.status(201).json(JSON.parse(JSON.stringify(saved)))
+      return
     }
     if (req.method === 'GET') {
       const collections = await CollectionModel.find({ archiveId }).exec()
