@@ -14,6 +14,7 @@ export default function Home() {
   const [archive, setArchive] = useState<Archive | null>(null)
   const [searchName, setSearchName] = useState<string>('')
   const [createPassword, setCreatePassword] = useState<string>('')
+  const [visitorPassword, setVisitorPassword] = useState<string>('')
   const [message, setMessage] = useState<string>('')
   const [songsJson, setSongsJson] = useState<string>('')
 
@@ -60,6 +61,7 @@ export default function Home() {
       created: new Date(),
       modified: new Date(),
       createPassword: createPassword,
+      visitorPassword: visitorPassword,
     }
     const response = await fetch('/api/archive', {
       method: 'POST',
@@ -89,6 +91,12 @@ export default function Home() {
 
         <NpSubTitle>Arkiston luonti</NpSubTitle>
         <NpInput label='Luonnin salasana' value={createPassword} onChange={(e) => setCreatePassword(e.target.value)} />
+        <div>Arkistolle asetettava vierailijoiden salasana</div>
+        <NpInput
+          label='Vierailijoiden salasana'
+          value={visitorPassword}
+          onChange={(e) => setVisitorPassword(e.target.value)}
+        />
         <NpButton onClick={saveArchive}>Luo arkisto</NpButton>
 
         {archive && (

@@ -6,17 +6,28 @@ export const NpButton = ({
   className,
   disabled = false,
   inProgress = false,
+  variant = 'primary',
+  type = 'button',
 }: {
   children: React.ReactNode
   onClick: () => void
   className?: string
   disabled?: boolean
   inProgress?: boolean
+  variant?: 'primary' | 'secondary'
+  type?: 'button' | 'submit'
 }) => {
+  const primary = 'bg-emerald-700 text-white hover:bg-emerald-800 hover:text-white'
+  const secondary = 'bg-white text-emerald-700 border-emerald-700 border hover:bg-emerald-100 hover:text-emerald-800'
   return (
     <button
+      type={type}
       onClick={onClick}
-      className={`bg-amber-500 bg-opacity-20 border text-gray-800 py-2 px-4 rounded shadow-inner   ${className}`}
+      className={`${
+        variant === 'primary' ? primary : secondary
+      } bg-opacity-70 border text-gray-800 py-2 px-4 rounded shadow-inner shadow-sm transform active:scale-75 transition-transform ${
+        disabled ? 'opacity-20 ' : ''
+      }  ${className}`}
       disabled={disabled}
     >
       {inProgress && (
@@ -34,6 +45,7 @@ const SpinnerInfinity = ({
   speed,
   still = false,
   thickness,
+  variant = 'primary',
   ...svgProps
 }: {
   secondaryColor: string
@@ -41,6 +53,7 @@ const SpinnerInfinity = ({
   still?: boolean
   thickness: number
   size?: number
+  variant?: 'primary' | 'secondary'
 } & SVGProps<SVGSVGElement>) => {
   const strokeWidth = 7 * (thickness / 100)
   const dashStyle: CSSProperties = !still

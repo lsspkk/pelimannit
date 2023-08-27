@@ -13,6 +13,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
       return
     }
     const id = typeof archiveId === 'string' ? archiveId : archiveId[0]
+    if (req.session?.archiveVisitor?.archiveId !== id) {
+      res.status(401).json({ error: 'not logged in' })
+      return
+    }
 
     await dbConnect()
 

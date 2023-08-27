@@ -145,7 +145,7 @@ const DnDCollectionSongs = ({
 }
 
 const CollectionSongs = ({ songs }: { songs: Song[] }) => (
-  <div className='flex flex-col gap-4 w-full items-start'>
+  <div className='flex flex-col gap-4 w-full items-start pb-4'>
     {songs.map((song, index) => (
       <CollectionSongCard key={song._id} song={song} index={index} />
     ))}

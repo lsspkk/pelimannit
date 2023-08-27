@@ -1,8 +1,9 @@
+import { Archive, ArchiveModel } from '@/models/archive'
+
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { dbConnect } from '@/models/dbConnect'
-import { SongModel } from '@/models/song'
-import { sessionOptions } from '@/models/session'
 import { withIronSessionApiRoute } from 'iron-session/next'
+import { sessionOptions } from '@/models/session'
 
 async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const { archiveId } = req.query
@@ -11,21 +12,26 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
     return
   }
   const id = typeof archiveId === 'string' ? archiveId : archiveId[0]
-  if (req.session?.archiveVisitor?.archiveId !== id) {
+
+  if (!req.session.archiveUser || req.session.archiveUser.archiveId !== id) {
     res.status(401).json({ error: 'not logged in' })
     return
   }
 
   try {
     await dbConnect()
-    if (req.method === 'GET') {
-      console.debug('GET archive', archiveId)
-      const songs = await (
-        await SongModel.find({ archiveId: id }).exec()
-      ).sort((a, b) => {
-        return a.path.localeCompare(b.path) * -1 || a.songname.localeCompare(b.songname)
-      })
-      res.status(200).json([...songs])
+
+    if (req.method === 'POST') {
+      const archive: Archive | null = await ArchiveModel.findById(id).exec()
+
+      if (!archive) {
+        res.status(401).json({ error: `nuottiarkistoa ${id} ei löydy` })
+      } else {
+        console.log('updating archive', archive)
+        archive.visitorPassword = req.body.visitorPassword
+        const updatedArchive = await ArchiveModel.findByIdAndUpdate(id, archive, { new: true }).exec()
+        res.status(200).json(updatedArchive)
+      }
     }
   } catch (error) {
     console.log(error)

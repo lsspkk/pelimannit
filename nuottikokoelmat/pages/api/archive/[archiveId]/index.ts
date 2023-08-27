@@ -2,14 +2,22 @@ import { Archive, ArchiveModel } from '../../../../models/archive'
 
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { dbConnect } from '../../../../models/dbConnect'
+import { sessionOptions } from '@/models/session'
+import { withIronSessionApiRoute } from 'iron-session/next'
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
+async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const { archiveId } = req.query
   if (!archiveId) {
     res.status(400).json({ error: 'archiveId missing' })
     return
   }
   const id = typeof archiveId === 'string' ? archiveId : archiveId[0]
+
+  if (req.session?.archiveVisitor?.archiveId !== id) {
+    res.status(401).json({ error: 'not logged in' })
+    console.log({ session: req.session })
+    return
+  }
 
   try {
     await dbConnect()
@@ -25,7 +33,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
     if (req.method === 'GET') {
-      console.debug('GET archive', archiveId)
       const archives: Array<Archive> = await ArchiveModel.find({
         _id: archiveId,
       }).exec()
@@ -41,3 +48,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(500).json({ error })
   }
 }
+export default withIronSessionApiRoute(handler, sessionOptions)

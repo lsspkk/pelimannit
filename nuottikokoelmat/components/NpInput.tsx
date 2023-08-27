@@ -21,7 +21,7 @@ export const NpInput = ({
     <div className={`flex flex-col gap-2 ${className}`}>
       {label && <label>{label}</label>}
       <input
-        className='px-[2px] focus:border focus:border-cyan-300 focus-visible:border-cyan-300 focus-visible:border'
+        className='px-[2px] border-gray-300 focus:border focus:border-cyan-300 focus-visible:border-cyan-300 border'
         type={type}
         placeholder={placeholder}
         value={value}

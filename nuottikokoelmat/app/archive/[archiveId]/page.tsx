@@ -8,16 +8,27 @@ import { NpSubTitle } from '../../../components/NpTitle'
 import { NpMain } from '@/components/NpMain'
 import { NpButtonCard } from '@/components/NpButtonCard'
 import { AddCollection } from './AddCollection'
-import { NpIconButton } from '@/components/NpIconButton'
 import { NpInput } from '@/components/NpInput'
-import { set } from 'mongoose'
+
+type ManagingSection = 'NONE' | 'LOGIN' | 'MANAGE'
 
 export default function Home({ params }: { params: { archiveId: string } }) {
   const router = useRouter()
 
+  const { archiveId } = params || {}
   // @ts-ignore
-  const { data, isLoading, error } = useArchive(params.archiveId) || {}
+  const { data, isLoading, error } = useArchive(archiveId) || {}
+  const [section, setSection] = React.useState<ManagingSection>('NONE')
+  const { data: archiveUser, mutate: mutateArchiveUser } = useArchiveUser(archiveId)
 
+  const onStop = async () => {
+    const response = await fetch(`/api/archive/${archiveId}/manage/stop`)
+    if (response.ok) {
+      mutateArchiveUser({ archiveId: '', username: '' })
+    } else {
+      console.error('Failed to stop managing archive', response)
+    }
+  }
   return (
     <NpMain>
       {isLoading && <div>Ladataan...</div>}
@@ -29,22 +40,47 @@ export default function Home({ params }: { params: { archiveId: string } }) {
               <NpSubTitle>Arkisto</NpSubTitle>
               <div>{data.archivename}</div>
             </div>
-            <NpButton onClick={() => router.push(`/archive/${data._id}/songs`)}>Kappaleet</NpButton>
+            {section === 'NONE' && (
+              <NpButton onClick={() => router.push(`/archive/${data._id}/songs`)}>Kappaleet</NpButton>
+            )}
           </div>
-          <StartManaging archiveId={params.archiveId} />
-          <Collections archiveId={data._id} />
+          <div className='flex-col flex gap-4 w-full items-end'>
+            {section === 'NONE' && archiveUser?.archiveId !== archiveId && (
+              <NpButton variant='secondary' className='w-28 -mt-10' onClick={() => setSection('LOGIN')}>
+                Ylläpito
+              </NpButton>
+            )}
+            {section === 'NONE' && archiveUser?.archiveId === archiveId && (
+              <NpButton className='-mt-10' onClick={() => setSection('MANAGE')}>
+                Asetukset
+              </NpButton>
+            )}
+            {section === 'NONE' && archiveUser?.archiveId === archiveId && (
+              <NpButton className='' onClick={onStop}>
+                Lopeta hallinnointi
+              </NpButton>
+            )}
+            {section === 'LOGIN' && <ArchiveLoginSection archiveId={archiveId} setSection={setSection} />}
+            {section === 'MANAGE' && <ArchiveManageSection archiveId={archiveId} setSection={setSection} />}
+          </div>
+          {section === 'NONE' && <Collections archiveId={data._id} />}
         </React.Fragment>
       )}
     </NpMain>
   )
 }
 
-const StartManaging = ({ archiveId }: { archiveId: string }) => {
-  const [showLogin, setShowLogin] = React.useState(false)
+const ArchiveLoginSection = ({
+  archiveId,
+  setSection,
+}: {
+  archiveId: string
+  setSection: (section: ManagingSection) => void
+}) => {
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [error, setError] = React.useState('')
-  const { data, mutate } = useArchiveUser(archiveId)
+  const { mutate } = useArchiveUser(archiveId)
 
   const onStart = async () => {
     const response = await fetch(`/api/archive/${archiveId}/manage/start`, {
@@ -55,44 +91,75 @@ const StartManaging = ({ archiveId }: { archiveId: string }) => {
       body: JSON.stringify({ username, password }),
     })
     if (response.ok) {
-      setShowLogin(false)
+      setSection('NONE')
       mutate({ archiveId, username })
     } else {
       setError('Virheellinen käyttäjätunnus tai salasana')
     }
   }
+  return (
+    <div className='flex flex-col gap-4 w-full pt-4 md:pt-14 max-w-sm'>
+      <div>Kirjaudu hallinnoimaan arkistoa</div>
+      <NpInput placeholder='Käyttäjätunnus' value={username} onChange={(e) => setUsername(e.target.value)} />
+      <NpInput type='password' placeholder='Salasana' value={password} onChange={(e) => setPassword(e.target.value)} />
 
-  const onStop = async () => {
-    const response = await fetch(`/api/archive/${archiveId}/manage/stop`)
-    if (response.ok) {
-      mutate({ archiveId: '', username: '' })
+      {error && <div className='text-red-800'>{error}</div>}
+      <div className='flex flex-row gap-4 justify-between'>
+        <NpButton variant='secondary' onClick={() => setSection('NONE')}>
+          Peruuta
+        </NpButton>
+        <NpButton onClick={onStart}>Kirjaudu</NpButton>
+      </div>
+    </div>
+  )
+}
+
+const ArchiveManageSection = ({
+  archiveId,
+  setSection,
+}: {
+  archiveId: string
+  setSection: (section: ManagingSection) => void
+}) => {
+  const { data: archive, mutate: mutateArchive } = useArchive(archiveId)
+  const [password, setPassword] = React.useState(archive?.visitorPassword || '')
+  const [error, setError] = React.useState('')
+
+  const onUpdatePassword = async () => {
+    const response = await fetch(`/api/archive/${archiveId}/manage/visitorPassword`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ visitorPassword: password }),
+    })
+    if (response.ok && archive) {
+      mutateArchive({ ...archive, visitorPassword: password })
     } else {
-      console.error('Failed to stop managing archive', response)
+      setError('Virheellinen salasana')
     }
   }
+  const saveDisabled = password === archive?.visitorPassword || password.length < 4
 
   return (
-    <div className='flex-col flex gap-4 w-full items-end'>
-      {!showLogin && data?.archiveId === archiveId && (
-        <NpButton className='-mt-10' onClick={onStop}>
-          Lopeta hallinnointi
-        </NpButton>
-      )}
-      {!showLogin && data?.archiveId !== archiveId && (
-        <NpButton className='w-28 -mt-10' onClick={() => setShowLogin(true)}>
-          Kirjaudu
-        </NpButton>
-      )}
-      {showLogin && (
-        <div className='flex flex-col gap-4 w-full pt-4 md:pt-14 max-w-sm'>
-          <div>Kirjaudu hallinnoimaan arkistoa</div>
-          <NpInput placeholder='Käyttäjätunnus' value={username} onChange={(e) => setUsername(e.target.value)} />
-          <NpInput placeholder='Salasana' value={password} onChange={(e) => setPassword(e.target.value)} />
+    <div className='flex flex-col gap-4 w-full pt-12 md:pt-24'>
+      <NpButton className='w-28 -mt-8 self-end' onClick={() => setSection('NONE')}>
+        Peruuta
+      </NpButton>
 
+      {archive && (
+        <div className='flex flex-col gap-4 w-full pt-4 md:pt-14 max-w-sm justify-end self-end'>
+          <div>Vierailijoiden salasana</div>
+          <div className='text-sm'>Vanha: {archive.visitorPassword}</div>
+          <div className='flex flex-row gap-4 justify-stretch'>
+            <div>Uusi:</div>
+            <NpInput placeholder='Salasana' value={password} onChange={(e) => setPassword(e.target.value)} />
+          </div>
           {error && <div className='text-red-800'>{error}</div>}
           <div className='flex flex-row gap-4 justify-end'>
-            <NpButton onClick={() => setShowLogin(false)}>Peruuta</NpButton>
-            <NpButton onClick={onStart}>Kirjaudu</NpButton>
+            <NpButton disabled={saveDisabled} onClick={onUpdatePassword}>
+              Tallenna
+            </NpButton>
           </div>
         </div>
       )}

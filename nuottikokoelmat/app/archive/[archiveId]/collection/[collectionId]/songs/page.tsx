@@ -51,7 +51,7 @@ export default function Home({
       {aError && <div>Virhe arkiston kappaleiden lataamisessa: {JSON.stringify(aError)}</div>}
 
       {songs && (
-        <div className='flex flex-col gap-4 w-full items-start'>
+        <div className='flex flex-col gap-4 w-full items-start pb-4'>
           <NpBackButton onClick={() => router.push(`/archive/${archiveId}/collection/${collectionId}`)} />
           <div className='flex-col w-full items-start flex gap-1 -mt-4 mb-4'>
             <NpTitle>Kappalevalinnat</NpTitle>

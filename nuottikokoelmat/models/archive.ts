@@ -5,6 +5,7 @@ export interface Archive extends Partial<Document> {
   created: Date
   modified: Date
   url?: string
+  visitorPassword?: string
 }
 
 export const ArchiveSchema = new Schema<Archive>({
@@ -12,6 +13,7 @@ export const ArchiveSchema = new Schema<Archive>({
   created: { type: Date, required: true },
   modified: { type: Date, required: true },
   url: { type: String, required: false },
+  visitorPassword: { type: String, required: false },
 })
 
 export const ArchiveModel = (mongoose.models?.Archive ||

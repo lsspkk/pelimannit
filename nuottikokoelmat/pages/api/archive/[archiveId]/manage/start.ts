@@ -10,6 +10,10 @@ async function startManageRoute(req: NextApiRequest, res: NextApiResponse) {
     return
   }
   const id = typeof archiveId === 'string' ? archiveId : archiveId[0]
+  if (req.session?.archiveVisitor?.archiveId !== id) {
+    res.status(401).json({ error: 'not logged in' })
+    return
+  }
 
   const { username, password } = await req.body
   console.debug('startManageRoute', { username, password })

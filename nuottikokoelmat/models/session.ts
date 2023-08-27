@@ -2,6 +2,7 @@
 import type { IronSessionOptions } from 'iron-session'
 import { User } from './user'
 import { ArchiveUser } from './archiveUser'
+import { ArchiveVisitor } from './archiveVisitor'
 
 export const sessionOptions: IronSessionOptions = {
   password: process.env.SECRET_COOKIE_PASSWORD as string,
@@ -17,5 +18,6 @@ declare module 'iron-session' {
   interface IronSessionData {
     user?: User
     archiveUser?: ArchiveUser
+    archiveVisitor?: ArchiveVisitor
   }
 }
