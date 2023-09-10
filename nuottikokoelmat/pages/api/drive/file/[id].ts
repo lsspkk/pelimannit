@@ -1,3 +1,5 @@
+// backend for testing google drive api
+
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { google } from 'googleapis'
 import path from 'path'
@@ -33,12 +35,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-const SCOPES = ['https://www.googleapis.com/auth/drive']
+const SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+const keyJson = Buffer.from(process.env.CREDENTIALS_BASE64, 'base64').toString('ascii')
 
 async function getClient() {
   try {
     return new google.auth.GoogleAuth({
-      keyFile: path.join(process.cwd(), '.') + '/credentials.json',
+      credentials: JSON.parse(keyJson),
       scopes: SCOPES,
     })
   } catch (error) {
