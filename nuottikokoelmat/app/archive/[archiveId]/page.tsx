@@ -191,7 +191,6 @@ const Collections = ({ archiveId }: { archiveId: string }) => {
       {data && (
         <div className='flex flex-col gap-4'>
           {data?.map((collection) => (
-            <div className='flex flex-row w-full gap-4 items-center'>
               <NpButtonCard
                 key={collection._id}
                 onClick={() => router.push(`/archive/${archiveId}/collection/${collection._id}`)}
@@ -201,7 +200,6 @@ const Collections = ({ archiveId }: { archiveId: string }) => {
                   <div>{collection.description}</div>
                 </div>
               </NpButtonCard>
-            </div>
           ))}
         </div>
       )}

@@ -40,7 +40,7 @@ export const NpButton = ({
   )
 }
 
-const SpinnerInfinity = ({
+export const SpinnerInfinity = ({
   secondaryColor,
   speed,
   still = false,

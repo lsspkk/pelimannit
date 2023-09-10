@@ -10,12 +10,13 @@ import { NpButton } from '@/components/NpButton'
 import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-
 import { NpBackButton } from '@/components/NpBackButton'
 import { NpIconButton } from '@/components/NpIconButton'
 import { PencilIcon } from '@/components/icons/PencilIcon'
 import { NpSubTitle, NpTitle } from '@/components/NpTitle'
 import { NpButtonCard } from '@/components/NpButtonCard'
+import { PdfDialog, PdfDialogParams } from '@/components/PdfDialog'
+import { SpinnerInfinity } from '@/components/NpButton'
 
 export default function Home({
   params: { archiveId, collectionId },
@@ -118,7 +119,7 @@ const DnDCollectionSongs = ({
 
   useEffect(() => {
     void saveSongOrder(dndSongs.map((s, index) => ({ songId: s._id, index })))
-  }, [dndSongs])
+  }, [dndSongs, saveSongOrder])
 
   const onDragEnd = (event: { active: any; over: any }) => {
     const { active, over } = event
@@ -144,29 +145,62 @@ const DnDCollectionSongs = ({
   )
 }
 
-const CollectionSongs = ({ songs }: { songs: Song[] }) => (
-  <div className='flex flex-col gap-4 w-full items-start pb-4'>
-    {songs.map((song, index) => (
-      <CollectionSongCard key={song._id} song={song} index={index} />
-    ))}
-  </div>
-)
+const CollectionSongs = ({ songs }: { songs: Song[] }) => {
 
-const CollectionSongCard = ({ song, index }: { song: Song; index: number }) => {
-  const router = useRouter()
+  const [pdfDialogParams, setPdfDialogParams] = React.useState<PdfDialogParams | null>(null)
+
+  const onLoadPdf = async (song: Song) => {
+    const response = await fetch(`/api/archive/${song.archiveId}/song/pdf`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(song),
+    })
+    const blob = await response.blob()
+    const fileUrl = URL.createObjectURL(blob)
+    setPdfDialogParams({ fileUrl, songs, index: songs?.findIndex((s) => s._id === song._id) || 0, song })
+  }
 
   return (
-    <NpButtonCard onClick={() => router.push(song.url)}>
+    <div className='flex flex-col gap-4 w-full items-start pb-4'>
+      {!pdfDialogParams && songs.map((song, index) => (
+        <CollectionSongCard key={song._id} song={song} index={index} onLoadPdf={() => onLoadPdf(song)}/>
+      ))}
+      { pdfDialogParams && ( 
+        <PdfDialog pdfDialogParams={pdfDialogParams} onLoadPdf={onLoadPdf} onClose={() => setPdfDialogParams(null)} />
+      )}
+    </div>
+  )
+}
+
+const CollectionSongCard = ({ song, index, onLoadPdf }: { 
+  song: Song; index: number; onLoadPdf: () => void
+}) => {
+  const [ isLoading, setIsLoading ] = React.useState(false)
+  const loadPdf = () => {
+    setIsLoading(true)
+    onLoadPdf()
+  }
+
+  return (
+    <NpButtonCard onClick={loadPdf}>
       <div className='flex-col w-1/12 flex items-center justify-center'>
         <div className='text-amber-700 text-xl -ml-2'>{index + 1}</div>
+        { isLoading && (  
+          <SpinnerInfinity size={50} thickness={100} speed={100} color='#36ad47' secondaryColor='rgba(0, 0, 0, 0.44)' />
+        )}
       </div>
       <div className='flex-col w-11/12 flex'>
         <div className='text-md'>{song.songname}</div>
         <div className='text-xs overflow-clip text-clip whitespace-nowrap'>{displayPath(song)}</div>
       </div>
+      
     </NpButtonCard>
   )
 }
+
+
 
 const DnDCollectionSongCard = ({ song, index, id }: { song: Song; index: number; id: string }) => {
   const { listeners, setNodeRef, transform, transition } = useSortable({ id })

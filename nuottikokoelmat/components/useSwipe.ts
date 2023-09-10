@@ -11,7 +11,7 @@ interface SwipeOutput {
   onTouchEnd: () => void
 }
 
-export default (input: SwipeInput): SwipeOutput => {
+export const useSwipe = (input: SwipeInput): SwipeOutput => {
   const [touchStartX, setTouchStartX] = useState(0)
   const [touchEndX, setTouchEndX] = useState(0)
   const [touchStartY, setTouchStartY] = useState(0)

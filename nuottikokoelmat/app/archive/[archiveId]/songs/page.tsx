@@ -9,6 +9,8 @@ import { Song } from '@/models/song'
 import { NpBackButton } from '@/components/NpBackButton'
 import { NpIconButton } from '@/components/NpIconButton'
 import { PdfDialog, PdfDialogParams } from '@/components/PdfDialog'
+import { SpinnerInfinity } from '@/components/NpButton'
+
 
 export default function Home({ params }: { params: { archiveId: string } }) {
   const router = useRouter()
@@ -66,15 +68,22 @@ function displayPath(song: Song): String {
 
 const ArchiveSongCard = ({ song, onLoadPdf }: { song: Song; onLoadPdf: () => void }) => {
   const router = useRouter()
+  const [ isLoading, setIsLoading ] = useState(false)
+  const loadPdf = () => {
+    setIsLoading(true)
+    onLoadPdf()
+  }
 
   return (
     <NpButtonCard>
-      <div className='w-10/12 justify-self-start whitespace-nowrap' onClick={() => router.push(song.url)}>
+      <div className='w-10/12 justify-self-start whitespace-nowrap' onClick={loadPdf}>
         <div className='text-lg'>{song.songname}</div>
         <div className='text-xs'>{displayPath(song)}</div>
       </div>
       <div className='2/12 justify-end flex justify-self-end flex-row w-full'>
-        <NpIconButton onClick={onLoadPdf}>PDF</NpIconButton>
+        { isLoading && (
+          <SpinnerInfinity size={50} thickness={100} speed={100} color='#36ad47' secondaryColor='rgba(0, 0, 0, 0.44)' />
+        )}
       </div>
     </NpButtonCard>
   )
