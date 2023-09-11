@@ -7,10 +7,8 @@ import { NpMain } from '@/components/NpMain'
 import { NpButtonCard } from '@/components/NpButtonCard'
 import { Song } from '@/models/song'
 import { NpBackButton } from '@/components/NpBackButton'
-import { NpIconButton } from '@/components/NpIconButton'
 import { PdfDialog, PdfDialogParams } from '@/components/PdfDialog'
 import { SpinnerInfinity } from '@/components/NpButton'
-
 
 export default function Home({ params }: { params: { archiveId: string } }) {
   const router = useRouter()
@@ -67,8 +65,7 @@ function displayPath(song: Song): String {
 }
 
 const ArchiveSongCard = ({ song, onLoadPdf }: { song: Song; onLoadPdf: () => void }) => {
-  const router = useRouter()
-  const [ isLoading, setIsLoading ] = useState(false)
+  const [isLoading, setIsLoading] = React.useState(false)
   const loadPdf = () => {
     setIsLoading(true)
     onLoadPdf()
@@ -81,8 +78,8 @@ const ArchiveSongCard = ({ song, onLoadPdf }: { song: Song; onLoadPdf: () => voi
         <div className='text-xs'>{displayPath(song)}</div>
       </div>
       <div className='2/12 justify-end flex justify-self-end flex-row w-full'>
-        { isLoading && (
-          <SpinnerInfinity size={50} thickness={100} speed={100} color='#36ad47' secondaryColor='rgba(0, 0, 0, 0.44)' />
+        {isLoading && (
+          <SpinnerInfinity size={10} thickness={100} speed={100} color='#36ad47' secondaryColor='rgba(0, 0, 0, 0.44)' />
         )}
       </div>
     </NpButtonCard>

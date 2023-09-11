@@ -4,12 +4,14 @@ import React, { useState } from 'react'
 import { NpTitle } from '@/components/NpTitle'
 import { NpButton } from '@/components/NpButton'
 import { NpInput } from '@/components/NpInput'
-import { Viewer } from '@react-pdf-viewer/core'
 import { PdfDialog } from '@/components/PdfDialog'
+import { useSwipe } from '@/components/useSwipe'
+import mongoose, { ObjectId } from 'mongoose'
 
 export default function Home() {
   const [pdfFile, setPdfFile] = useState<Blob | null>(null)
   const [fileId, setFileId] = useState<string>('1QkpfMqg6Ey2_QvnApVnBR6iLkQOdNLi5')
+  const [swipeName, setName] = useState<string>('')
   const getPdfFile = async () => {
     const response = await fetch(`/api/drive/file/${fileId}`)
     if (response.ok) {
@@ -17,6 +19,12 @@ export default function Home() {
       setPdfFile(pdfFile)
     }
   }
+
+  const { onTouchEnd } = useSwipe({
+    onSwipedLeft: () => setName('left'),
+    onSwipedRight: () => setName('right'),
+  })
+  console.debug({ onTouchEnd })
 
   return (
     <main className='flex flex-col items-center p-2 gap-4 h-full justify-start h-screen'>
@@ -29,7 +37,11 @@ export default function Home() {
       <div className='flex-col justify-between w-full gap-2'>
         {pdfFile && (
           <PdfDialog
-            pdfDialogParams={{ index: 0, fileUrl: URL.createObjectURL(pdfFile) }}
+            pdfDialogParams={{
+              index: 0,
+              fileUrl: URL.createObjectURL(pdfFile),
+              song: { _id: '1', archiveId: new mongoose.Types.ObjectId('1'), songname: swipeName, path: '', url: '' },
+            }}
             onClose={() => {
               setPdfFile(null)
             }}

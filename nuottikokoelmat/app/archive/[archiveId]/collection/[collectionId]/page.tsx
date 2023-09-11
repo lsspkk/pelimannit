@@ -146,7 +146,6 @@ const DnDCollectionSongs = ({
 }
 
 const CollectionSongs = ({ songs }: { songs: Song[] }) => {
-
   const [pdfDialogParams, setPdfDialogParams] = React.useState<PdfDialogParams | null>(null)
 
   const onLoadPdf = async (song: Song) => {
@@ -164,20 +163,19 @@ const CollectionSongs = ({ songs }: { songs: Song[] }) => {
 
   return (
     <div className='flex flex-col gap-4 w-full items-start pb-4'>
-      {!pdfDialogParams && songs.map((song, index) => (
-        <CollectionSongCard key={song._id} song={song} index={index} onLoadPdf={() => onLoadPdf(song)}/>
-      ))}
-      { pdfDialogParams && ( 
+      {!pdfDialogParams &&
+        songs.map((song, index) => (
+          <CollectionSongCard key={song._id} song={song} index={index} onLoadPdf={() => onLoadPdf(song)} />
+        ))}
+      {pdfDialogParams && (
         <PdfDialog pdfDialogParams={pdfDialogParams} onLoadPdf={onLoadPdf} onClose={() => setPdfDialogParams(null)} />
       )}
     </div>
   )
 }
 
-const CollectionSongCard = ({ song, index, onLoadPdf }: { 
-  song: Song; index: number; onLoadPdf: () => void
-}) => {
-  const [ isLoading, setIsLoading ] = React.useState(false)
+const CollectionSongCard = ({ song, index, onLoadPdf }: { song: Song; index: number; onLoadPdf: () => void }) => {
+  const [isLoading, setIsLoading] = React.useState(false)
   const loadPdf = () => {
     setIsLoading(true)
     onLoadPdf()
@@ -187,20 +185,17 @@ const CollectionSongCard = ({ song, index, onLoadPdf }: {
     <NpButtonCard onClick={loadPdf}>
       <div className='flex-col w-1/12 flex items-center justify-center'>
         <div className='text-amber-700 text-xl -ml-2'>{index + 1}</div>
-        { isLoading && (  
-          <SpinnerInfinity size={50} thickness={100} speed={100} color='#36ad47' secondaryColor='rgba(0, 0, 0, 0.44)' />
+        {isLoading && (
+          <SpinnerInfinity size={10} thickness={100} speed={100} color='#36ad47' secondaryColor='rgba(0, 0, 0, 0.44)' />
         )}
       </div>
       <div className='flex-col w-11/12 flex'>
         <div className='text-md'>{song.songname}</div>
         <div className='text-xs overflow-clip text-clip whitespace-nowrap'>{displayPath(song)}</div>
       </div>
-      
     </NpButtonCard>
   )
 }
-
-
 
 const DnDCollectionSongCard = ({ song, index, id }: { song: Song; index: number; id: string }) => {
   const { listeners, setNodeRef, transform, transition } = useSortable({ id })

@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-const keyJson = Buffer.from(process.env.CREDENTIALS_BASE64, 'base64').toString('ascii')
+const keyJson = Buffer.from(process.env.CREDENTIALS_BASE64 || '', 'base64').toString('ascii')
 
 async function getClient() {
   try {
