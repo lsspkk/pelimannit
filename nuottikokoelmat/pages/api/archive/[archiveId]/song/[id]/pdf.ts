@@ -9,26 +9,32 @@ import { google } from 'googleapis'
 import path from 'path'
 
 async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
-  const { archiveId } = req.query
-  if (!archiveId) {
+  if (!req.query.archiveId) {
     res.status(400).json({ error: 'archiveId missing' })
     return
   }
-  const id = typeof archiveId === 'string' ? archiveId : archiveId[0]
-  if (req.session?.archiveVisitor?.archiveId !== id) {
+  if (!req.query.id) {
+    res.status(400).json({ error: 'id missing' })
+    return
+  }
+
+  const archiveId = typeof req.query.archiveId === 'string' ? req.query.archiveId : req.query.archiveId[0]
+  if (req.session?.archiveVisitor?.archiveId !== archiveId) {
     res.status(401).json({ error: 'not logged in' })
     return
   }
+  const id = typeof req.query.id === 'string' ? req.query.id : req.query.id[0]
+
   try {
-    if (req.method === 'POST') {
-      const song = req.body as Song
-      if (!song.url) {
-        res.status(400).json({ error: 'url missing' })
+    if (req.method === 'GET') {
+      await dbConnect()
+      const song = await SongModel.findById(id).exec()
+      if (!song) {
+        res.status(404).json({ error: 'not found' })
         return
       }
-
-      const url = song.url
-      const fileId = url.split('/')[5].split('?')[0]
+      console.log('GET song pdf from url', song.url)
+      const fileId = song.url.split('/')[5].split('?')[0]
       const client = await getClient()
 
       if (!client) {

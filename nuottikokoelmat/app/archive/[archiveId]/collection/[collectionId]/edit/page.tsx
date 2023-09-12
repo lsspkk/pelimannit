@@ -5,11 +5,11 @@ import React from 'react'
 import { NpInput } from '@/components/NpInput'
 import { NpTextArea } from '@/components/NpTextarea'
 import { Collection } from '@/models/collection'
-import mongoose from 'mongoose'
 import { useCollection } from '@/models/swrApi'
 import { NpMain } from '@/components/NpMain'
-import { NpSubTitle, NpTitle } from '@/components/NpTitle'
+import { NpSubTitle } from '@/components/NpTitle'
 import { NpBackButton } from '@/components/NpBackButton'
+import { NpToast } from '@/components/NpToast'
 
 export default function Home({
   params: { collectionId, archiveId },
@@ -22,6 +22,7 @@ export default function Home({
   const [description, setDescription] = React.useState(data?.description || '')
   const [inProgress, setInProgress] = React.useState(false)
   const [confirmDelete, setConfirmDelete] = React.useState(false)
+  const [showToast, setShowToast] = React.useState(true)
 
   const onSaveChanges = async (oldCollection: Collection) => {
     setInProgress(true)
@@ -68,7 +69,7 @@ export default function Home({
     <NpMain>
       <NpBackButton onClick={() => router.back()} />
       {isLoading && <div>Ladataan...</div>}
-      {error && <div>Virhe: {JSON.stringify(error)}</div>}
+      {error && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
       {data && (
         <div className='flex flex-col gap-4 items-start'>
           <NpSubTitle className='-mt-4 mb-4'>Kokoelman muokkaus</NpSubTitle>

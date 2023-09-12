@@ -6,6 +6,7 @@ import { NpMain } from '@/components/NpMain'
 import { NpTitle } from '@/components/NpTitle'
 import { useArchive, useArchives } from '@/models/swrApi'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { Input } from 'postcss'
 import React from 'react'
 
 export default function Home() {
@@ -52,7 +53,7 @@ export default function Home() {
             value={visitorPassword}
             type='password'
             onChange={(e) => setVisitorPassword(e.target.value)}
-          ></NpInput>
+          />
 
           <div className='text-red-500'>{error}</div>
           <div className='flex gap-4 justify-between'>

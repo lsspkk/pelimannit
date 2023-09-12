@@ -1,13 +1,10 @@
 'use client'
 import React from 'react'
 import { NpButton } from '@/components/NpButton'
-import { Icon, ScrollMode, SpecialZoomLevel, Viewer, Worker } from '@react-pdf-viewer/core'
+import { ScrollMode, SpecialZoomLevel, Viewer, Worker } from '@react-pdf-viewer/core'
 import { version } from 'pdfjs-dist'
 import { Song } from '@/models/song'
 import { NpBackButton } from './NpBackButton'
-import { useSwipe } from './useSwipe'
-import { SpinnerInfinity } from '@/components/NpButton'
-
 
 export const WorkerUrl = new URL(
   `https://unpkg.com/pdfjs-dist@${version}/build/pdf.worker.min.js`,
@@ -30,9 +27,8 @@ export const PdfDialog = ({
   pdfDialogParams: PdfDialogParams
   onClose: () => void
 }) => {
-  const [ inProgress, setInProgress ] = React.useState<'NEXT' | 'PREVIOUS' | 'NONE' >('NONE')
+  const [inProgress, setInProgress] = React.useState<'NEXT' | 'PREVIOUS' | 'NONE'>('NONE')
   const { fileUrl, songs, index, song } = pdfDialogParams
-
 
   const hasNext = songs && index < songs.length - 1
   const hasPrevious = songs && index > 0
@@ -51,10 +47,6 @@ export const PdfDialog = ({
       setInProgress('NONE')
     }
   }
-  const { onTouchEnd } = useSwipe({
-    onSwipedLeft: onNext,
-    onSwipedRight: onPrevious,
-  })
 
   return (
     <div className='fixed top-0 left-0 w-full h-full bg-white overflow-y-scroll overflow-x-hidden'>
@@ -62,19 +54,29 @@ export const PdfDialog = ({
 
       {songs && (
         <div className=''>
-          <div className='fixed bottom-1 w-full justify-center text-xs text-center text-emerald-700 opacity-40 flex gap-4'>
+          <div className='fixed bottom-1 w-full justify-center text-xs text-center text-emerald-700 opacity-40 flex gap-4 z-30'>
             <div>
               {index + 1}/{songs?.length}
             </div>
             <div> {song?.songname}</div>
           </div>
           <div className='fixed left-0 bottom-0 z-30'>
-            <NpButton className='py-4 rounded-lg opacity-20' onClick={onPrevious} disabled={!hasPrevious} inProgress={inProgress === 'PREVIOUS'}>
+            <NpButton
+              className='py-4 rounded-lg opacity-20'
+              onClick={onPrevious}
+              disabled={!hasPrevious}
+              inProgress={inProgress === 'PREVIOUS'}
+            >
               <IconPrevious />
             </NpButton>
           </div>
           <div className='fixed right-0 bottom-0 z-30'>
-            <NpButton className='py-4 rounded-lg opacity-20' onClick={onNext} disabled={!hasNext} inProgress={inProgress === 'NEXT'}>
+            <NpButton
+              className='py-4 rounded-lg opacity-20'
+              onClick={onNext}
+              disabled={!hasNext}
+              inProgress={inProgress === 'NEXT'}
+            >
               <IconNext />
             </NpButton>
           </div>

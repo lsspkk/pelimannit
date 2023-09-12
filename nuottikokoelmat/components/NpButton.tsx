@@ -54,6 +54,7 @@ export const SpinnerInfinity = ({
   thickness: number
   size?: number
   variant?: 'primary' | 'secondary'
+  className?: string
 } & SVGProps<SVGSVGElement>) => {
   const strokeWidth = 7 * (thickness / 100)
   const dashStyle: CSSProperties = !still

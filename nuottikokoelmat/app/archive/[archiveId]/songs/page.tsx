@@ -9,23 +9,25 @@ import { Song } from '@/models/song'
 import { NpBackButton } from '@/components/NpBackButton'
 import { PdfDialog, PdfDialogParams } from '@/components/PdfDialog'
 import { SpinnerInfinity } from '@/components/NpButton'
+import { NpToast } from '@/components/NpToast'
 
 export default function Home({ params }: { params: { archiveId: string } }) {
   const router = useRouter()
 
   // @ts-ignore
   const { data, isLoading, error } = useArchiveSongs(params.archiveId) || {}
+  const [loadPdfError, setLoadPdfError] = React.useState<string | null>(null)
+  const [showToast, setShowToast] = React.useState(true)
 
   const [pdfDialogParams, setPdfDialogParams] = React.useState<PdfDialogParams | null>(null)
 
   const onLoadPdf = async (song: Song) => {
-    const response = await fetch(`/api/archive/${song.archiveId}/song/pdf`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(song),
-    })
+    const response = await fetch(`/api/archive/${song.archiveId}/song/${String(song._id)}/pdf`)
+    if (!response.ok) {
+      setLoadPdfError(`Failed to load pdf for song ${song.songname}`)
+      setTimeout(() => setLoadPdfError(null), 3000)
+      return
+    }
     const blob = await response.blob()
     const fileUrl = URL.createObjectURL(blob)
     setPdfDialogParams({ fileUrl, songs: data, index: data?.findIndex((s) => s._id === song._id) || 0, song })
@@ -34,7 +36,8 @@ export default function Home({ params }: { params: { archiveId: string } }) {
   return (
     <NpMain>
       {isLoading && <div>Ladataan...</div>}
-      {error && <div>Virhe: {JSON.stringify(error)}</div>}
+      {error && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
+      {loadPdfError && <NpToast onClose={() => setLoadPdfError(null)}> {loadPdfError}</NpToast>}
       {data && !pdfDialogParams && (
         <div className='flex flex-col gap-4 w-full items-start'>
           <NpBackButton onClick={() => router.push(`/archive/${params.archiveId}`)} />
@@ -79,7 +82,7 @@ const ArchiveSongCard = ({ song, onLoadPdf }: { song: Song; onLoadPdf: () => voi
       </div>
       <div className='2/12 justify-end flex justify-self-end flex-row w-full'>
         {isLoading && (
-          <SpinnerInfinity size={10} thickness={100} speed={100} color='#36ad47' secondaryColor='rgba(0, 0, 0, 0.44)' />
+          <SpinnerInfinity className='w-10' thickness={200} speed={100} color='#999999' secondaryColor='#dddddd' />
         )}
       </div>
     </NpButtonCard>

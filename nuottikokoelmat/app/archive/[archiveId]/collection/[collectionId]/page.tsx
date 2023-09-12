@@ -1,6 +1,6 @@
 'use client'
 
-import { useArchiveUser, useCollection, useCollectionSongs, useIsArchiveManager } from '@/models/swrApi'
+import { useCollection, useCollectionSongs, useIsArchiveManager } from '@/models/swrApi'
 import { useRouter } from 'next/navigation'
 import React, { useEffect } from 'react'
 import { NpMain } from '@/components/NpMain'
@@ -11,12 +11,12 @@ import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors } from '@dn
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { NpBackButton } from '@/components/NpBackButton'
-import { NpIconButton } from '@/components/NpIconButton'
 import { PencilIcon } from '@/components/icons/PencilIcon'
-import { NpSubTitle, NpTitle } from '@/components/NpTitle'
+import { NpSubTitle } from '@/components/NpTitle'
 import { NpButtonCard } from '@/components/NpButtonCard'
 import { PdfDialog, PdfDialogParams } from '@/components/PdfDialog'
 import { SpinnerInfinity } from '@/components/NpButton'
+import { NpToast } from '@/components/NpToast'
 
 export default function Home({
   params: { archiveId, collectionId },
@@ -29,6 +29,7 @@ export default function Home({
   const { data, mutate, isLoading: isLoadingSongs, errorSongs } = useCollectionSongs(collectionId) || {}
   const { data: collection, isLoading: isLoadingCollection, error: errorCollection } = useCollection(collectionId) || {}
   const isManager = useIsArchiveManager(archiveId)
+  const [showToast, setShowToast] = React.useState(true)
 
   const saveSongOrder = async (orderedSongs: ChoiceOrder[]) => {
     const res = await fetch(`/api/collection/${collectionId}/choice/order`, {
@@ -51,7 +52,7 @@ export default function Home({
   return (
     <NpMain>
       {isLoading && <div>Ladataan...</div>}
-      {error && <div>Virhe: {JSON.stringify(error)}</div>}
+      {error && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
       {collection && (
         <div className='flex flex-col gap-4 w-full items-start -mt-4'>
           <NpBackButton onClick={() => router.push(`/archive/${archiveId}`)} />
@@ -147,15 +148,14 @@ const DnDCollectionSongs = ({
 
 const CollectionSongs = ({ songs }: { songs: Song[] }) => {
   const [pdfDialogParams, setPdfDialogParams] = React.useState<PdfDialogParams | null>(null)
+  const [loadPdfError, setLoadPdfError] = React.useState<string | null>(null)
 
   const onLoadPdf = async (song: Song) => {
-    const response = await fetch(`/api/archive/${song.archiveId}/song/pdf`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(song),
-    })
+    const response = await fetch(`/api/archive/${song.archiveId}/song/${String(song._id)}/pdf`)
+    if (!response.ok) {
+      setLoadPdfError(`Failed to load pdf for song ${song.songname}`)
+      return
+    }
     const blob = await response.blob()
     const fileUrl = URL.createObjectURL(blob)
     setPdfDialogParams({ fileUrl, songs, index: songs?.findIndex((s) => s._id === song._id) || 0, song })
@@ -163,6 +163,7 @@ const CollectionSongs = ({ songs }: { songs: Song[] }) => {
 
   return (
     <div className='flex flex-col gap-4 w-full items-start pb-4'>
+      {loadPdfError && <NpToast onClose={() => setLoadPdfError(null)}>{loadPdfError}</NpToast>}
       {!pdfDialogParams &&
         songs.map((song, index) => (
           <CollectionSongCard key={song._id} song={song} index={index} onLoadPdf={() => onLoadPdf(song)} />
@@ -179,6 +180,7 @@ const CollectionSongCard = ({ song, index, onLoadPdf }: { song: Song; index: num
   const loadPdf = () => {
     setIsLoading(true)
     onLoadPdf()
+    setIsLoading(false)
   }
 
   return (
