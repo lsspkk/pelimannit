@@ -9,10 +9,9 @@ import { Song } from '@/models/song'
 import { Choice } from '@/models/choice'
 import { addChoice, removeChoice } from '@/models/api'
 import { Types } from 'mongoose'
-import { NpButton } from '@/components/NpButton'
 import { NpTitle } from '@/components/NpTitle'
 import { NpBackButton } from '@/components/NpBackButton'
-import { NpIconButton } from '../../../../../../components/NpIconButton'
+import { NpIconButton } from '@/components/NpIconButton'
 
 export default function Home({
   params: { archiveId, collectionId },

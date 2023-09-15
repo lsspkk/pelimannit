@@ -9,6 +9,8 @@ import { NpMain } from '@/components/NpMain'
 import { NpButtonCard } from '@/components/NpButtonCard'
 import { AddCollection } from './AddCollection'
 import { NpInput } from '@/components/NpInput'
+import { NpToast } from '@/components/NpToast'
+import { NpBackButton } from '@/components/NpBackButton'
 
 type ManagingSection = 'NONE' | 'LOGIN' | 'MANAGE'
 
@@ -20,6 +22,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
   const { data, isLoading, error } = useArchive(archiveId) || {}
   const [section, setSection] = React.useState<ManagingSection>('NONE')
   const { data: archiveUser, mutate: mutateArchiveUser } = useArchiveUser(archiveId)
+  const [showToast, setShowToast] = React.useState(true)
 
   const onStop = async () => {
     const response = await fetch(`/api/archive/${archiveId}/manage/stop`)
@@ -29,10 +32,25 @@ export default function Home({ params }: { params: { archiveId: string } }) {
       console.error('Failed to stop managing archive', response)
     }
   }
+  const onLogout = async () => {
+    if (section === 'NONE' && archiveUser?.archiveId === archiveId) {
+      await onStop()
+    }
+    const response = await fetch(`/api/archive/${archiveId}/visitor/logout`)
+    if (response.ok) {
+      router.push('/')
+    } else {
+      console.error('Failed to logout', response)
+    }
+  }
+
   return (
     <NpMain>
       {isLoading && <div>Ladataan...</div>}
-      {error && <div>Virhe: {JSON.stringify(error)}</div>}
+      {error && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
+
+      <NpBackButton onClick={onLogout} />
+
       {data && (
         <React.Fragment>
           <div className='flex flex-col gap-4 w-full items-start'>
@@ -173,6 +191,7 @@ const Collections = ({ archiveId }: { archiveId: string }) => {
   const [showAddCollection, setShowAddCollection] = React.useState(false)
   // @ts-ignore
   const { data, isLoading, error } = useArchiveCollections(archiveId) || {}
+  const [showToast, setShowToast] = React.useState(true)
 
   const isManager = useIsArchiveManager(archiveId)
 
@@ -187,21 +206,19 @@ const Collections = ({ archiveId }: { archiveId: string }) => {
 
       {!isLoading && data?.length === 0 && <div>Ei kokoelmia</div>}
       {isLoading && <div>Ladataan...</div>}
-      {error && <div>Virhe: {JSON.stringify(error)}</div>}
+      {error && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
       {data && (
         <div className='flex flex-col gap-4'>
           {data?.map((collection) => (
-            <div className='flex flex-row w-full gap-4 items-center'>
-              <NpButtonCard
-                key={collection._id}
-                onClick={() => router.push(`/archive/${archiveId}/collection/${collection._id}`)}
-              >
-                <div className='w-full'>
-                  <div>{collection.collectionname}</div>
-                  <div>{collection.description}</div>
-                </div>
-              </NpButtonCard>
-            </div>
+            <NpButtonCard
+              key={collection._id}
+              onClick={() => router.push(`/archive/${archiveId}/collection/${collection._id}`)}
+            >
+              <div className='w-full'>
+                <div>{collection.collectionname}</div>
+                <div>{collection.description}</div>
+              </div>
+            </NpButtonCard>
           ))}
         </div>
       )}

@@ -1,38 +1,7 @@
-
-
-
-
-
-
 # Links
-
 
 https://cloud.mongodb.com
 https://fullstackopen.com/osa3/tietojen_tallettaminen_mongo_db_tietokantaan#mongo-db
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # Nuotit google drivesta
 
@@ -43,15 +12,36 @@ Esim. Ahjolan pelimannien arkisto
 
 https://script.google.com/u/0/home/projects/1PFZGY6jm_ktiWrvhxuplvzfe1WRlymvTELr7ytcLSQNGUVBfRzf8qkmM/edit
 
+## PDF selaimeen siten, että toimii swipe
 
+Pelkkä linkki ei toimi, koska tässä tulee googlen javascript pdf viewer
+https://drive.google.com/file/d/1X5Flm-tFo4jVHu8u4p49CkqeEqqxzaiW/view?usp=drivesdk
 
+1. lataa serverlessillä pdf,
 
+   https://developers.google.com/drive/api/quickstart/nodejs
 
+   https://github.com/orgs/vercel/discussions/219
 
+   - suojaa tämä
+   - mikä google drive api tiedonsiirto-quota on?
 
+2. näytä blob react-pdf-viewerillä
+   https://react-pdf-viewer.dev/docs/getting-started/
 
+   https://stackoverflow.com/questions/73961579/react-app-pdf-retrieved-from-server-in-object-visible-in-mozilla-but-not-i
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+3. lisää next/previous ja kytke niihin swipe
+   https://react-pdf-viewer.dev/examples/slide-presentation/
+
+## Toinen tapa saada PDF:t selaimeen
+
+1. lataa google drivestä omalle vpn:lle, johon cors asetuksissa tai apikey,
+   johon sallittu lähde
+
+   https://developers.google.com/drive/api/quickstart/nodejs
+
+2. näytä blob PDF kuten edellä tai https://www.geeksforgeeks.org/how-to-display-a-pdf-as-an-image-in-react-app-using-url/bg
 
 ## Getting Started
 

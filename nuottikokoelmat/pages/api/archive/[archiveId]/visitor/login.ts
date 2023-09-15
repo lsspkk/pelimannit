@@ -13,14 +13,13 @@ async function startManageRoute(req: NextApiRequest, res: NextApiResponse) {
   const id = typeof archiveId === 'string' ? archiveId : archiveId[0]
 
   const { visitorPassword } = await req.body
-  console.debug('start visiting', { archiveId, visitorPassword })
+  console.debug('start visiting archive', { archiveId, timestamp: Date.now() })
   try {
     const archive = await ArchiveModel.findById(id).exec()
     if (!archive) {
       res.status(401).json({ message: `Archive ${id} not found` })
       return
     }
-    console.debug({ archive, visitorPassword })
     if (archive.visitorPassword !== visitorPassword) {
       res.status(401).json({ message: 'Unauthorized, wrong password' })
       return

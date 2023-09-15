@@ -9,14 +9,16 @@ import { NpMain } from '../components/NpMain'
 import React from 'react'
 import { NpInput } from '@/components/NpInput'
 import { NpButton } from '@/components/NpButton'
+import { NpToast } from '@/components/NpToast'
 
 export default function Home() {
   const { data, isLoading, error } = useArchives()
+  const [showToast, setShowToast] = React.useState(true)
 
   return (
     <NpMain>
       {isLoading && <div>Ladataan...</div>}
-      {error && <div>Virhe: {JSON.stringify(error)}</div>}
+      {error && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
       {data && (
         <div className='flex flex-col gap-4 w-full'>
           <NpTitle>Nuottiarkistot</NpTitle>{' '}
@@ -69,6 +71,7 @@ const ArchiveCard = ({ archive }: { archive: Archive }) => {
                 value={visitorPassword}
                 placeholder='Vierailijan salasana'
                 onChange={(e) => setVisitorPassword(e.target.value)}
+                type='password'
               />
               {<div className='text-red-900 text-sm min-h-4'>{error}</div>}
               <div className='flex gap-2 mt-2 justify-between w-full'>
