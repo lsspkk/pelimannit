@@ -10,6 +10,7 @@ import { NpButtonCard } from '@/components/NpButtonCard'
 import { AddCollection } from './AddCollection'
 import { NpInput } from '@/components/NpInput'
 import { NpToast } from '@/components/NpToast'
+import { NpBackButton } from '@/components/NpBackButton'
 
 type ManagingSection = 'NONE' | 'LOGIN' | 'MANAGE'
 
@@ -31,10 +32,25 @@ export default function Home({ params }: { params: { archiveId: string } }) {
       console.error('Failed to stop managing archive', response)
     }
   }
+  const onLogout = async () => {
+    if (section === 'NONE' && archiveUser?.archiveId === archiveId) {
+      await onStop()
+    }
+    const response = await fetch(`/api/archive/${archiveId}/visitor/logout`)
+    if (response.ok) {
+      router.push('/')
+    } else {
+      console.error('Failed to logout', response)
+    }
+  }
+
   return (
     <NpMain>
       {isLoading && <div>Ladataan...</div>}
       {error && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
+
+      <NpBackButton onClick={onLogout} />
+
       {data && (
         <React.Fragment>
           <div className='flex flex-col gap-4 w-full items-start'>
