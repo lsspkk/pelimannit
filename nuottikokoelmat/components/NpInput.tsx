@@ -12,7 +12,6 @@ export const NpInput = ({
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   className?: string
 } & React.InputHTMLAttributes<HTMLInputElement>) => {
-  console.debug('NpInput', { ...props })
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
       {label && <label>{label}</label>}
