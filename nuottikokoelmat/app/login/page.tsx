@@ -49,6 +49,7 @@ export default function Home() {
           <div>Kirjaudu vierailijaksi nuottiarkistoon, jotta voit käyttää sitä.</div>
 
           <NpInput
+            autoFocus
             label='Vierailijan salasana'
             value={visitorPassword}
             type='password'

@@ -56,7 +56,7 @@ export default function Home({
             <NpTitle>Kappalevalinnat</NpTitle>
             {songs?.map((song) => (
               <ChoiceSongCard
-                key={song._id}
+                key={song._id.toString()}
                 song={song}
                 choice={choices?.find((c) => c.songId === song._id)}
                 onChoiceClick={onChoiceClick}

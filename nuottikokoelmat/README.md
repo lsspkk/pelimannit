@@ -43,6 +43,22 @@ https://drive.google.com/file/d/1X5Flm-tFo4jVHu8u4p49CkqeEqqxzaiW/view?usp=drive
 
 2. näytä blob PDF kuten edellä tai https://www.geeksforgeeks.org/how-to-display-a-pdf-as-an-image-in-react-app-using-url/bg
 
+# lokaalit tiedostot
+
+Secure Context localhostiin
+https://github.com/FiloSottile/mkcert
+https://www.npmjs.com/package/local-ssl-proxy
+
+npx local-ssl-proxy --source 3001 --target 3000 --key localhost-key.pem --cert localhost.pem
+https://developer.mozilla.org/en-US/docs/Web/API/Window/showDirectoryPicker
+
+-- ei firefoxissa :(
+
+https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory
+
+-- ei firefox for androidissa, mutta on androidin chromessa.
+olis riittävän hyvä
+
 ## Getting Started
 
 First, run the development server:

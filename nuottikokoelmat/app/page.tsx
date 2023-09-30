@@ -67,6 +67,7 @@ const ArchiveCard = ({ archive }: { archive: Archive }) => {
             <div className='flex flex-col gap-4 items-start'>
               <NpSubTitle>{archive.archivename}</NpSubTitle>
               <NpInput
+                autoFocus
                 className='w-full'
                 value={visitorPassword}
                 placeholder='Vierailijan salasana'
