@@ -6,7 +6,7 @@ import { NpButton } from '@/components/NpButton'
 import { NpInput } from '@/components/NpInput'
 import { PdfDialog } from '@/components/PdfDialog'
 import { useSwipe } from '@/components/useSwipe'
-import mongoose, { ObjectId } from 'mongoose'
+import mongoose, { ObjectId, Types } from 'mongoose'
 
 export default function Home() {
   const [pdfFile, setPdfFile] = useState<Blob | null>(null)
@@ -40,7 +40,13 @@ export default function Home() {
             pdfDialogParams={{
               index: 0,
               fileUrl: URL.createObjectURL(pdfFile),
-              song: { _id: '1', archiveId: new mongoose.Types.ObjectId('1'), songname: swipeName, path: '', url: '' },
+              song: {
+                _id: new Types.ObjectId('1'),
+                archiveId: new mongoose.Types.ObjectId('1'),
+                songname: swipeName,
+                path: '',
+                url: '',
+              },
             }}
             onClose={() => {
               setPdfFile(null)

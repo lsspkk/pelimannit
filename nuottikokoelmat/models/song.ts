@@ -1,6 +1,7 @@
 import mongoose, { Document, Model, model, Schema, Types } from 'mongoose'
 
 export interface Song extends Partial<Document> {
+  _id: Types.ObjectId
   songname: string
   path: string
   url: string

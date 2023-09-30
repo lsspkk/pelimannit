@@ -133,7 +133,7 @@ const SimpleArchiveList = ({ archive }: { archive: Archive }) => {
       </div>
       <div className='flex-col w-full gap-4'>
         {songs?.map((song: Song, index: number) => (
-          <div key={song._id} className='flex justify-between w-full'>
+          <div key={String(song._id)} className='flex justify-between w-full'>
             <div className='flex flex-col'>
               <a href={song.url}>
                 {index + 1} {song.songname}
