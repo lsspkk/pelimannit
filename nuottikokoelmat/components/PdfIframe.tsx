@@ -15,7 +15,7 @@ export const PdfIframe = ({
   songs: Song[]
   onLoadPdf: (index: number) => void
 }) => {
-  const iframeUrl = iframeIndex && songs ? songs[iframeIndex].url : null
+  const iframeUrl = songs ? songs[iframeIndex].url : null
 
   if (!iframeUrl) {
     return null
