@@ -17,8 +17,8 @@ export const NpButton = ({
   variant?: 'primary' | 'secondary'
   type?: 'button' | 'submit'
 }) => {
-  const primary = 'bg-emerald-700 text-white hover:bg-emerald-800 hover:text-white'
-  const secondary = 'bg-white text-emerald-700 border-emerald-700 border hover:bg-emerald-100 hover:text-emerald-800'
+  const primary = 'bg-sky-700 text-white hover:bg-sky-800 hover:text-white'
+  const secondary = 'bg-white text-sky-600 border-sky-600 border hover:bg-sky-100 hover:text-sky-800'
   return (
     <button
       type={type}

@@ -44,7 +44,7 @@ export default function Home({
     }
   }
   return (
-    <NpMain>
+    <NpMain title="Kappalevalinnat">
       {isLoading && <div>Ladataan...</div>}
       {cError && <div>Virhe kokoelman kappaleiden lataamisessa: {JSON.stringify(cError)}</div>}
       {aError && <div>Virhe arkiston kappaleiden lataamisessa: {JSON.stringify(aError)}</div>}
@@ -53,7 +53,6 @@ export default function Home({
         <div className='flex flex-col gap-4 w-full items-start pb-4'>
           <NpBackButton onClick={() => router.push(`/archive/${archiveId}/collection/${collectionId}`)} />
           <div className='flex-col w-full items-start flex gap-1 -mt-4 mb-4'>
-            <NpTitle>Kappalevalinnat</NpTitle>
             {songs?.map((song) => (
               <ChoiceSongCard
                 key={song._id.toString()}

@@ -36,7 +36,7 @@ export default function Home() {
   const archive = data?.find((a) => a._id === archiveId)
 
   return (
-    <NpMain>
+    <NpMain title="Kirjaudu">
       <form onSubmit={onLogin}>
         <div className='flex flex-col gap-4 w-full'>
           {!archive && <NpTitle>Pääsy evätty</NpTitle>}

@@ -66,13 +66,12 @@ export default function Home({
   }
 
   return (
-    <NpMain>
+    <NpMain title="Kokoelman muokkaus">
       <NpBackButton onClick={() => router.back()} />
       {isLoading && <div>Ladataan...</div>}
       {error && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
       {data && (
         <div className='flex flex-col gap-4 items-start'>
-          <NpSubTitle className='-mt-4 mb-4'>Kokoelman muokkaus</NpSubTitle>
           <div className='flex flex-col gap-4'>
             <NpInput
               label='Nimi'

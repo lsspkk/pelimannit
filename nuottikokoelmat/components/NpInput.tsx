@@ -17,7 +17,7 @@ export const NpInput = ({
       {label && <label>{label}</label>}
       <input
         {...props}
-        className='px-[2px] border-gray-300 focus:border focus:border-cyan-300 focus-visible:border-cyan-300 border'
+        className='p-[4px] rounded-xs border-gray-300 focus:border focus:border-cyan-300 border'
         value={value}
         onChange={onChange}
       />

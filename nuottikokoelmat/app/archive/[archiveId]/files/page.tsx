@@ -52,7 +52,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
   }
 
   return (
-    <NpMain>
+    <NpMain title="Tiedostot">
       {isLoading && <div>Ladataan...</div>}
       {error !== '' && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
 
@@ -60,8 +60,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 
       <div className='flex flex-col gap-2 w-full items-start'>
         <div className='flex-col w-full items-start'>
-          <NpSubTitle>Tiedostot</NpSubTitle>
-          <div>{data?.archivename}</div>
+          <NpSubTitle>{data?.archivename}</NpSubTitle>
         </div>
         <input
           type='file'
@@ -76,12 +75,13 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 
         <div className='text-xs mt-2 '>
           <p>
-            Tallenna arkiston kappaleet tiedostoina omalle laitteelle, ja lataa ne tästä välimuistiksi. Tiedostojen
-            avulla nuottien katsominen ja selaaminen nopeutuu.
+            1. Tallenna arkiston kappaleet tiedostoina omalle laitteelle.
+            </p>
+            <p> 2. Lataa tiedostot välimuistiksi, nuottien katselu nopeutuu.
           </p>
         </div>
 
-        <div className='flex gap-4 w-full justify-between text-sm items-end'>
+        <div className='flex gap-4 w-full justify-end text-sm items-end'>
           <NpButton onClick={() => hiddenFileInputRef.current?.click()}>
             {fileMap.size > 0 ? 'Päivitä' : 'Lataa'}
           </NpButton>

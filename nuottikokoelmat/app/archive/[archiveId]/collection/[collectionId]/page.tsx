@@ -45,7 +45,7 @@ export default function Home({
   const error = errorSongs || errorCollection
 
   return (
-    <NpMain>
+    <NpMain title="Kokoelma">
       {isLoading && <div>Ladataan...</div>}
       {error && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
       {collection && (

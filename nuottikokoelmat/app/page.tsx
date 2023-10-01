@@ -10,18 +10,18 @@ import React from 'react'
 import { NpInput } from '@/components/NpInput'
 import { NpButton } from '@/components/NpButton'
 import { NpToast } from '@/components/NpToast'
+import { NpDialog } from '../components/NpDialog'
 
 export default function Home() {
   const { data, isLoading, error } = useArchives()
   const [showToast, setShowToast] = React.useState(true)
 
   return (
-    <NpMain>
+    <NpMain title="Nuottiarkistot">
       {isLoading && <div>Ladataan...</div>}
       {error && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
       {data && (
         <div className='flex flex-col gap-4 w-full'>
-          <NpTitle>Nuottiarkistot</NpTitle>{' '}
           {data.map((d) => (
             <ArchiveCard key={d._id} archive={d} />
           ))}
@@ -30,6 +30,7 @@ export default function Home() {
     </NpMain>
   )
 }
+
 
 const CreationDate = ({ date }: { date: Date }) => {
   const d = new Date(date)
@@ -76,7 +77,7 @@ const ArchiveCard = ({ archive }: { archive: Archive }) => {
               />
               {<div className='text-red-900 text-sm min-h-4'>{error}</div>}
               <div className='flex gap-2 mt-2 justify-between w-full'>
-                <NpButton onClick={() => setShowLogin(false)}>Peruuta</NpButton>
+                <NpButton variant="secondary" onClick={() => setShowLogin(false)}>Peruuta</NpButton>
                 <NpButton type='submit' onClick={onLogin}>
                   Kirjaudu
                 </NpButton>
@@ -96,17 +97,4 @@ const ArchiveCard = ({ archive }: { archive: Archive }) => {
   )
 }
 
-const NpDialog = ({ children, onClose }: { children: React.ReactNode; onClose: () => void }) => {
-  return (
-    <React.Fragment>
-      <div
-        className='fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center'
-        onClick={onClose}
-      />
 
-      <div className='fixed top-20 left-0 flex justify-center w-full'>
-        <div className='bg-white rounded-md shadow-md p-6 '>{children}</div>
-      </div>
-    </React.Fragment>
-  )
-}

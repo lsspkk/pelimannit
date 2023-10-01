@@ -45,7 +45,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
   }
 
   return (
-    <NpMain>
+    <NpMain title='Arkisto'>
       {isLoading && <div>Ladataan...</div>}
       {error && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
 
@@ -53,18 +53,16 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 
       {data && (
         <React.Fragment>
-          <div className='flex flex-col gap-4 w-full items-start'>
-            <div className='flex-col w-full items-start'>
-              <NpSubTitle>Arkisto</NpSubTitle>
-              <div>{data.archivename}</div>
+          <div className='flex gap-4 w-full items-start justify-start flex-col'>
+            <div className='w-full'>
+              <NpSubTitle>{data.archivename}</NpSubTitle>
             </div>
+            <div className='flex gap-4 md:gap-8 '>
             {section === 'NONE' && (
               <NpButton onClick={() => router.push(`/archive/${data._id}/songs`)}>Kappaleet</NpButton>
             )}
-          </div>
-          <div className='flex-col flex gap-4 w-full items-end -mt-10'>
             {section === 'NONE' && (
-              <NpButton onClick={() => router.push(`/archive/${archiveId}/files`)}>Tiedostot</NpButton>
+              <NpButton variant='secondary' className='w-28' onClick={() => router.push(`/archive/${archiveId}/files`)}>Tiedostot</NpButton>
             )}
             {section === 'NONE' && archiveUser?.archiveId !== archiveId && (
               <NpButton variant='secondary' className='w-28' onClick={() => setSection('LOGIN')}>
@@ -81,9 +79,10 @@ export default function Home({ params }: { params: { archiveId: string } }) {
                 Lopeta ylläpito
               </NpButton>
             )}
+            </div>
+            </div>
             {section === 'LOGIN' && <ArchiveLoginSection archiveId={archiveId} setSection={setSection} />}
             {section === 'MANAGE' && <ArchiveManageSection archiveId={archiveId} setSection={setSection} />}
-          </div>
           {section === 'NONE' && <CollectionList archiveId={data._id} />}
         </React.Fragment>
       )}

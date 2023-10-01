@@ -12,7 +12,7 @@ const ButtonCard = ({
 } & React.HTMLAttributes<HTMLDivElement>) => {
   const hover = props.onClick ? 'hover:bg-cyan-600 hover:text-white cursor-pointer' : ''
   return (
-    <div ref={ref} {...props} className={`rounded-sm shadow-md p-2 flex border border-amber-700 w-full ${hover}`}>
+    <div ref={ref} {...props} className={`rounded-sm shadow-md p-2 flex border border-gray-400 w-full ${hover}`}>
       {children}
     </div>
   )

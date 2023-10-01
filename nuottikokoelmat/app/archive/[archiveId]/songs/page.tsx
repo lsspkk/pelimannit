@@ -43,7 +43,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
   const showIframe = iframeIndex !== null
 
   return (
-    <NpMain>
+    <NpMain title="Arkiston kappaleet">
       {isLoading && <div>Ladataan...</div>}
       {error && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
       {loadPdfError && <NpToast onClose={() => setLoadPdfError(null)}> {loadPdfError}</NpToast>}
@@ -52,7 +52,6 @@ export default function Home({ params }: { params: { archiveId: string } }) {
           <NpBackButton onClick={() => router.push(`/archive/${params.archiveId}`)} />
 
           <div className='flex-col w-full items-start flex gap-2 -mt-4 mb-4'>
-            <div>Arkiston kappaleet</div>
             {songs?.map((song, index) => (
               <BasicSongCard key={String(song._id)} song={song} onLoadPdf={onLoadPdf} index={index} />
             ))}

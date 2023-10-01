@@ -2,7 +2,7 @@ import React from 'react'
 
 export const NpTitle = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => {
   return (
-    <div className={`text-2xl font-extrabold text-emerald-700 text-shadow-sm shadow-sky-200 ${className}`}>
+    <div className={`text-2xl font-bold text-gray-500 text-shadow-sm shadow-sky-100 ${className}`}>
       {children}
     </div>
   )
@@ -10,7 +10,7 @@ export const NpTitle = ({ children, className = '' }: { children: React.ReactNod
 
 export const NpSubTitle = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => {
   return (
-    <div className={`text-xl font-bold text-emerald-800 text-shadow-sm shadow-emerald-100 ${className}`}>
+    <div className={`text-xl font-bold text-gray-500 text-shadow-sm shadow-sky-100 ${className}`}>
       {children}
     </div>
   )
