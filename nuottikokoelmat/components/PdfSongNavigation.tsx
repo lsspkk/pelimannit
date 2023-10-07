@@ -34,7 +34,7 @@ export const PdfSongNavigation = ({
     }
   }
 
-  const onSwipe = useSwipe({ onSwipedLeft: onPrevious, onSwipedRight: onNext })
+  const onSwipe = useSwipe({ onSwipedLeft: onNext, onSwipedRight: onPrevious })
 
   return (
     <div {...onSwipe} className='fixed bottom-0 w-full flex justify-between z-30 items-end bg-blue-800 bg-opacity-60'>
