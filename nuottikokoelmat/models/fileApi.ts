@@ -12,7 +12,7 @@ const getPath = (song: Song): string => {
 }
 
 export const getFileName = (file: File): string => {
-  const path = file.webkitRelativePath || ''
+  const path = file.webkitRelativePath || file.name
   if (path.includes('@')) {
     // no webkitdirectory support, using flattened folder structure with @
     const start = path.includes('/') ? path.split('/').slice(1).join('/') : path
