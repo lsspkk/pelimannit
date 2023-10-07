@@ -78,7 +78,10 @@ export default function Home({ params }: { params: { archiveId: string } }) {
           <p> 2. Lataa tiedostot välimuistiksi, nuottien katselu nopeutuu.</p>
         </div>
 
-        <div className='flex gap-4 w-full justify-end text-sm items-end'>
+        <div className='flex gap-4 w-full justify-between text-sm items-end'>
+          <div className='text-sm'>
+            Ladattu: {fileMap.size}, puuttuu: {missingSongs.length}
+          </div>
           <NpButton onClick={() => hiddenFileInputRef.current?.click()}>
             {fileMap.size > 0 ? 'Päivitä' : 'Lataa'}
           </NpButton>

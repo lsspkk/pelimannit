@@ -12,7 +12,15 @@ const getPath = (song: Song): string => {
 }
 
 export const getFileName = (file: File): string => {
-  const name = '/' + file.webkitRelativePath?.split('/').slice(1).join('/')
+  const path = file.webkitRelativePath || ''
+  if (path.includes('@')) {
+    // no webkitdirectory support, using flattened folder structure with @
+    const start = path.includes('/') ? path.split('/').slice(1).join('/') : path
+    const name = '/' + start.split('@').slice(0).join('/')
+    return name.normalize()
+  }
+  // has webkitdirectory support
+  const name = '/' + path.split('/').slice(1).join('/')
   return name.normalize()
 }
 
@@ -27,6 +35,7 @@ export const getFileMap = (songs: Song[], files: File[]): getFileMapResult => {
   const fileMap = new Map<Types.ObjectId, File>()
   for (const file of files) {
     const path = getFileName(file)
+    console.debug('path', path)
     const songId = pathToId.get(path)
     if (songId) {
       fileMap.set(songId, file)
