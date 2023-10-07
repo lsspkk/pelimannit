@@ -57,32 +57,38 @@ export default function Home({ params }: { params: { archiveId: string } }) {
             <div className='w-full'>
               <NpSubTitle>{data.archivename}</NpSubTitle>
             </div>
-            <div className='flex gap-4 md:gap-8 '>
-            {section === 'NONE' && (
-              <NpButton onClick={() => router.push(`/archive/${data._id}/songs`)}>Kappaleet</NpButton>
-            )}
-            {section === 'NONE' && (
-              <NpButton variant='secondary' className='w-28' onClick={() => router.push(`/archive/${archiveId}/files`)}>Tiedostot</NpButton>
-            )}
-            {section === 'NONE' && archiveUser?.archiveId !== archiveId && (
-              <NpButton variant='secondary' className='w-28' onClick={() => setSection('LOGIN')}>
-                Ylläpito
-              </NpButton>
-            )}
-            {section === 'NONE' && archiveUser?.archiveId === archiveId && (
-              <NpButton className='' onClick={() => setSection('MANAGE')}>
-                Asetukset
-              </NpButton>
-            )}
-            {section === 'NONE' && archiveUser?.archiveId === archiveId && (
-              <NpButton className='' onClick={onStop}>
-                Lopeta ylläpito
-              </NpButton>
-            )}
+            <div className='flex gap-4 md:gap-8 w-full'>
+              {section === 'NONE' && (
+                <NpButton onClick={() => router.push(`/archive/${data._id}/songs`)}>Kappaleet</NpButton>
+              )}
+              {section === 'NONE' && (
+                <NpButton
+                  variant='secondary'
+                  className='w-28'
+                  onClick={() => router.push(`/archive/${archiveId}/files`)}
+                >
+                  Tiedostot
+                </NpButton>
+              )}
+              {section === 'NONE' && archiveUser?.archiveId !== archiveId && (
+                <NpButton variant='secondary' className='w-28' onClick={() => setSection('LOGIN')}>
+                  Ylläpito
+                </NpButton>
+              )}
+              {section === 'NONE' && archiveUser?.archiveId === archiveId && (
+                <NpButton className='' onClick={() => setSection('MANAGE')}>
+                  Asetukset
+                </NpButton>
+              )}
+              {section === 'NONE' && archiveUser?.archiveId === archiveId && (
+                <NpButton className='' onClick={onStop}>
+                  Lopeta ylläpito
+                </NpButton>
+              )}
             </div>
-            </div>
-            {section === 'LOGIN' && <ArchiveLoginSection archiveId={archiveId} setSection={setSection} />}
-            {section === 'MANAGE' && <ArchiveManageSection archiveId={archiveId} setSection={setSection} />}
+          </div>
+          {section === 'LOGIN' && <ArchiveLoginSection archiveId={archiveId} setSection={setSection} />}
+          {section === 'MANAGE' && <ArchiveManageSection archiveId={archiveId} setSection={setSection} />}
           {section === 'NONE' && <CollectionList archiveId={data._id} />}
         </React.Fragment>
       )}

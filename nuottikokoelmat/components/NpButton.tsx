@@ -3,14 +3,14 @@ import React, { CSSProperties, SVGProps } from 'react'
 export const NpButton = ({
   children,
   onClick,
-  className,
+  className = '',
   disabled = false,
   inProgress = false,
   variant = 'primary',
   type = 'button',
 }: {
   children: React.ReactNode
-  onClick: () => void
+  onClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
   className?: string
   disabled?: boolean
   inProgress?: boolean

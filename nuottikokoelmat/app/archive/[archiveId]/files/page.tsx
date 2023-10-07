@@ -52,7 +52,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
   }
 
   return (
-    <NpMain title="Tiedostot">
+    <NpMain title='Tiedostot'>
       {isLoading && <div>Ladataan...</div>}
       {error !== '' && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
 
@@ -68,17 +68,14 @@ export default function Home({ params }: { params: { archiveId: string } }) {
           onChange={onUploadDirectory}
           style={{ display: 'none' }}
           // @ts-ignore
-          webkitdirectory=''
-          directory=''
+          webkitdirectory='webkitdirectory'
+          directory='directory'
           multiple
         />
 
         <div className='text-xs mt-2 '>
-          <p>
-            1. Tallenna arkiston kappaleet tiedostoina omalle laitteelle.
-            </p>
-            <p> 2. Lataa tiedostot välimuistiksi, nuottien katselu nopeutuu.
-          </p>
+          <p>1. Tallenna arkiston kappaleet tiedostoina omalle laitteelle.</p>
+          <p> 2. Lataa tiedostot välimuistiksi, nuottien katselu nopeutuu.</p>
         </div>
 
         <div className='flex gap-4 w-full justify-end text-sm items-end'>

@@ -36,7 +36,7 @@ export const PdfDialog = ({
 
   return (
     <div className='fixed top-0 left-0 w-full h-full bg-white overflow-y-scroll overflow-x-hidden'>
-      <NpBackButton onClick={onClose} />
+      <NpBackButton onClick={onClose} className='z-10' />
 
       {songs && <PdfSongNavigation songs={songs} index={index} onLoadPdf={onLoadPdf} />}
 

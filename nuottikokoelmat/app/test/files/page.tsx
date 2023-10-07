@@ -68,8 +68,8 @@ export default function Home() {
               onChange={onUploadDirectory}
               style={{ display: 'none' }}
               // @ts-ignore
-              webkitdirectory=''
-              directory=''
+              webkitdirectory='webkitdirectory'
+              directory='directory'
               multiple
             />
             <div>{archive.archivename}</div>
