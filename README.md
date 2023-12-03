@@ -7,7 +7,7 @@ Here's some apps for folk musicians.
 
 https://developers.google.com/drive/api/quickstart/js
 
-./drive -folder contains apps that use google drive API 
+./simpledrive -folder contains apps that use google drive API 
 
 development environment
 
@@ -15,7 +15,7 @@ Node JS version 16
 
 Start with
 
-    cd ./drive
+    cd ./simpledrive
     node ../simpleserver.js
 
 
@@ -23,10 +23,13 @@ http://localhost:9000/index.html
 
 
 
-# Google Photos
+# Nuottikokoelmat
 
-./photos -folder contains apps that use google photos API
+Note archives for multiple archives/bands for making collections to be used as concert or practice set lists.
+Supports url based note location such as Google drive or photos, and can use downloaded files as local note cache.
 
 
 
-https://developers.google.com/photos/library/guides/apply-filters
+# Nuottikokoelmat-api
+
+Alternative backend for the note archives.
