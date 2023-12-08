@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { authenticate } from '@google-cloud/local-auth'
 import { google } from 'googleapis'
 import path from 'path'
 

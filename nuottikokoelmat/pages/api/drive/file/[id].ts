@@ -2,7 +2,6 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { google } from 'googleapis'
-import path from 'path'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const fileId = req.query.id as string

@@ -4,13 +4,12 @@ import { sessionOptions } from '@/models/session'
 import bcrypt from 'bcrypt'
 
 async function startManageRoute(req: NextApiRequest, res: NextApiResponse) {
-  const { archiveId } = req.query
+  const archiveId = req.query.archiveId as string
   if (!archiveId) {
     res.status(400).json({ error: 'archiveId missing' })
     return
   }
-  const id = typeof archiveId === 'string' ? archiveId : archiveId[0]
-  if (req.session?.archiveVisitor?.archiveId !== id) {
+  if (req.session?.archiveVisitor?.archiveId !== archiveId) {
     res.status(401).json({ error: 'not logged in' })
     return
   }
@@ -31,7 +30,7 @@ async function startManageRoute(req: NextApiRequest, res: NextApiResponse) {
       const archivePasswordHash = archivePassword.split(':')[1]
       const passwordMatch = bcrypt.compareSync(password, archivePasswordHash)
       if (passwordMatch) {
-        const archiveUser = { username, archiveId: id }
+        const archiveUser = { username, archiveId }
         req.session.archiveUser = archiveUser
         await req.session.save()
         res.json(archiveUser)

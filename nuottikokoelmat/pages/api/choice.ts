@@ -6,13 +6,13 @@ import { withIronSessionApiRoute } from 'iron-session/next'
 
 async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   try {
+    if (!isAuthorized(req, res)) {
+      return
+    }
+
     await dbConnect()
 
     if (req.method === 'POST') {
-      if (!isAuthorized(req, res)) {
-        return
-      }
-
       const choice = req.body as Choice
       const newChoice = new ChoiceModel(choice)
       const saved = await newChoice.save()
