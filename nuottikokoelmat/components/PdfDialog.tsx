@@ -40,7 +40,7 @@ export const PdfDialog = ({
 
       {songs && <PdfSongNavigation songs={songs} index={index} onLoadPdf={onLoadPdf} />}
 
-      <div className='w-[112%] min-h-full ml-[-4%] mr-[-8%] z-0 overflow-y-scroll'>
+      <div className='w-[110%] min-h-full ml-[-4%] mr-[-6%] z-0 overflow-y-scroll'>
         <Worker workerUrl={WorkerUrl}>
           <Viewer fileUrl={currentUrl} defaultScale={SpecialZoomLevel.PageWidth} scrollMode={ScrollMode.Vertical} />
         </Worker>

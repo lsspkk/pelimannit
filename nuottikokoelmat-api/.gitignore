@@ -2,15 +2,6 @@
 
 # dependencies
 /node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
 
 # production
 /build
@@ -28,15 +19,3 @@ yarn-error.log*
 .env*.local
 .env
 
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-
-oma-todo.md
-/omadata
-credentials.json
-localhost.*

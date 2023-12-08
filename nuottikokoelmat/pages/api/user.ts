@@ -4,15 +4,15 @@ import { User, UserModel } from '../../models/user'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   try {
+    if (!process.env.CREATE_PASSWORD) {
+      res.status(401).json({ error: 'go away' })
+      return
+    }
+
     await dbConnect()
 
     if (req.method === 'POST') {
       const user = req.body as User
-
-      if (!process.env.CREATE_PASSWORD) {
-        res.status(401).json({ error: 'go away' })
-        return
-      }
 
       const foundUsername = await UserModel.find({ username: user.username })
       if (foundUsername) {
