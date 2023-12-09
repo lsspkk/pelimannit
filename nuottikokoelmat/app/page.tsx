@@ -1,6 +1,6 @@
 'use client'
 
-import { NpSubTitle, NpTitle } from '@/components/NpTitle'
+import { NpSubTitle } from '@/components/NpTitle'
 import { Archive } from '@/models/archive'
 import { useArchives } from '@/models/swrApi'
 import { useRouter } from 'next/navigation'
@@ -17,7 +17,7 @@ export default function Home() {
   const [showToast, setShowToast] = React.useState(true)
 
   return (
-    <NpMain title="Nuottiarkistot">
+    <NpMain title='Nuottiarkistot'>
       {isLoading && <div>Ladataan...</div>}
       {error && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
       {data && (
@@ -30,7 +30,6 @@ export default function Home() {
     </NpMain>
   )
 }
-
 
 const CreationDate = ({ date }: { date: Date }) => {
   const d = new Date(date)
@@ -77,7 +76,9 @@ const ArchiveCard = ({ archive }: { archive: Archive }) => {
               />
               {<div className='text-red-900 text-sm min-h-4'>{error}</div>}
               <div className='flex gap-2 mt-2 justify-between w-full'>
-                <NpButton variant="secondary" onClick={() => setShowLogin(false)}>Peruuta</NpButton>
+                <NpButton variant='secondary' onClick={() => setShowLogin(false)}>
+                  Peruuta
+                </NpButton>
                 <NpButton type='submit' onClick={onLogin}>
                   Kirjaudu
                 </NpButton>
@@ -96,5 +97,3 @@ const ArchiveCard = ({ archive }: { archive: Archive }) => {
     </React.Fragment>
   )
 }
-
-

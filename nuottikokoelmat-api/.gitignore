@@ -19,5 +19,7 @@ yarn-error.log*
 .env*.local
 .env
 
-# docker setup
+# deploy stuff
+deploy.sh
 docker-compose.yml
+*.zip

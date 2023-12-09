@@ -37,6 +37,9 @@ const apiHandler = async (
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ visitorPassword }),
     })
+    req.session.archiveVisitor = { archiveId }
+    await req.session.save()
+
     const json = await response.json()
     res.status(response.status).json(json)
   } else {
