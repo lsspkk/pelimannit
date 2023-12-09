@@ -5,12 +5,13 @@
   "main": "index.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "start": "node index.js",
+    "start": "node build/index.js",
     "dev": "nodemon --watch src src/index.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.3.1",
     "fastify": "^4.24.3",
     "fluent-json-schema": "^4.2.1",
     "mongoose": "^8.0.1"

@@ -1,7 +1,8 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify'
-import { ChoiceModel, Choice, ChoiceOrder } from '@/models/choice'
-import { SongModel, Song } from '@/models/song'
+import { ChoiceModel, Choice, ChoiceOrder } from '../models/choice'
+import { SongModel, Song } from '../models/song'
 import { Types } from 'mongoose'
+import { securityPreHandler } from '../securityPreHandler'
 
 interface CollectionId {
   Params: {
@@ -22,6 +23,8 @@ function indexCompareFn(a: Song & { index?: number }, b: Song & { index?: number
 }
 
 export const collectionChoiceRoutes: FastifyPluginAsync<{ prefix: string }> = async (fastify: FastifyInstance) => {
+  fastify.addHook('preHandler', securityPreHandler)
+
   fastify.get<CollectionId>('/api/v1/collection/:collectionId/songs', {}, async (request, reply) => {
     try {
       const { collectionId } = request.params
