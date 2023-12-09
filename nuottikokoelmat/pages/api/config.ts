@@ -19,7 +19,7 @@ export const secureFetch = async (path: string, init?: RequestInit): Promise<Res
   if (init?.method === 'POST' || init?.method === 'PUT') {
     headers['Content-Type'] = 'application/json'
   }
-  init = init || {}
+  init = init ?? {}
   init.headers = headers
 
   const response = await fetch(`${process.env.API_URL}${path}`, init)

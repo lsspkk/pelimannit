@@ -1,6 +1,6 @@
 import { Archive, ArchiveModel } from '../../../../models/archive'
 
-import { sessionOptions } from '@/models/session'
+import { sessionOptions } from '../../../../models/session'
 import { withIronSessionApiRoute } from 'iron-session/next'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { dbConnect } from '../../../../models/dbConnect'
@@ -20,6 +20,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
     return
   }
 
+  console.debug('1')
   try {
     if (hasApi('/api/archive/:archiveId')) {
       await apiHandler(req, res)
@@ -43,7 +44,10 @@ const apiHandler = async (req: NextApiRequest, res: NextApiResponse): Promise<vo
     console.log(`PUT /api/v1/archive/${req.query.archiveId}`, { json })
     res.status(response.status).json(json)
   } else if (req.method === 'GET') {
+    console.debug('2')
     const response = await secureFetch(`/api/v1/archive/${req.query.archiveId}`)
+    console.debug(`secureFetch to /api/v1/archive/${req.query.archiveId}}`)
+    console.debug(response.status)
     const json = await response.json()
     console.log(`GET /api/v1/archive/${req.query.archiveId}`, { json })
     res.status(response.status).json(json)
