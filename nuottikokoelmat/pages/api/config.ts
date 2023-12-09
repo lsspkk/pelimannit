@@ -10,9 +10,10 @@ const SECURE_API_SET = new Set<string>([
   '/api/collection/:collectionId/choice/array',
   '/api/collection/:collectionId/choice/order',
 ])
+const USE_ONLY_SERVERLESS = process.env.USE_ONLY_SERVERLESS === 'true'
 
 export const hasApi = (path: string): boolean => {
-  return SECURE_API_SET.has(path)
+  return !USE_ONLY_SERVERLESS && SECURE_API_SET.has(path)
 }
 export const secureFetch = async (path: string, init?: RequestInit): Promise<Response> => {
   const headers: Record<string, string> = { Authorization: `Bearer ${process.env.SECURE_API_TOKEN}` }
