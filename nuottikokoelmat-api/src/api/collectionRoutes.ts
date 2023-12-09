@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify'
-import { Collection, CollectionModel } from '@/models/collection'
+import { Collection, CollectionModel } from '../models/collection'
 import mongoose from 'mongoose'
+import { securityPreHandler } from '../securityPreHandler'
 
 interface ArchiveId {
   Params: {
@@ -15,6 +16,8 @@ interface CollectionId {
 }
 
 export const collectionRoutes: FastifyPluginAsync<{ prefix: string }> = async (fastify: FastifyInstance) => {
+  fastify.addHook('preHandler', securityPreHandler)
+
   fastify.get<ArchiveId>('/api/v1/archive/:archiveId/collection', {}, async (request, reply) => {
     try {
       const { archiveId } = request.params

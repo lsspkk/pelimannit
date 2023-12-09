@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify'
-import { Archive, ArchiveModel } from '@/models/archive'
-import { SongModel, Song } from '@/models/song'
+import { Archive, ArchiveModel } from '../models/archive'
+import { SongModel, Song } from '../models/song'
+import { securityPreHandler } from '../securityPreHandler'
 
 interface ArchiveId {
   Params: {
@@ -9,6 +10,8 @@ interface ArchiveId {
 }
 
 export const archiveRoutes: FastifyPluginAsync<{ prefix: string }> = async (fastify: FastifyInstance) => {
+  fastify.addHook('preHandler', securityPreHandler)
+
   fastify.get(`/api/v1/archive`, {}, async (request, reply) => {
     try {
       const archives = await ArchiveModel.find({}).exec()
