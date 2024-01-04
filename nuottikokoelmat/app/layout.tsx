@@ -1,9 +1,8 @@
-import { SWRConfig } from 'swr'
 import './globals.css'
 import { Inter } from 'next/font/google'
-import path from 'path'
 import { SWRProvider } from './swr-provider'
 import { FileMapProvider } from '@/models/fileContext'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -19,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <FileMapProvider>
           <SWRProvider>{children}</SWRProvider>
         </FileMapProvider>
+        <SpeedInsights />
       </body>
     </html>
   )
