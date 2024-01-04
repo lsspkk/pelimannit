@@ -29,6 +29,7 @@ export const PdfIframe = ({
           setIframeIndex(null)
         }}
         className='z-10'
+        songPage
       />
       <PdfSongNavigation songs={songs || []} index={iframeIndex} onLoadPdf={onLoadPdf} />
       <iframe src={iframeUrl.replaceAll('/view?', '/preview?')} className='w-full h-full bottom-0 z-0' />

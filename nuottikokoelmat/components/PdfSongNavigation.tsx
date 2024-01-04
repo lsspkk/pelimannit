@@ -37,9 +37,12 @@ export const PdfSongNavigation = ({
   const onSwipe = useSwipe({ onSwipedLeft: onNext, onSwipedRight: onPrevious })
 
   return (
-    <div {...onSwipe} className='fixed bottom-0 w-full flex justify-between z-30 items-end bg-blue-800 bg-opacity-60'>
+    <div
+      {...onSwipe}
+      className='fixed left-0 bottom-0 w-full flex justify-between z-30 items-end bg-blue-800 bg-opacity-60'
+    >
       <NpButton
-        className='px-[0.2em] py-1 rounded-lg opacity-60 border-none'
+        className='px-[0.2em] rounded-lg opacity-60 border-none py-1 sm:py-0 md:py-1'
         onClick={onPrevious}
         disabled={!hasPrevious}
         inProgress={inProgress === 'PREVIOUS'}
@@ -61,7 +64,7 @@ export const PdfSongNavigation = ({
         </div>
       )}
       <NpButton
-        className='px-[0.2em] py-1 rounded-lg opacity-60 border-none'
+        className='px-[0.2em] rounded-lg opacity-60 border-none py-1 sm:py-0 md:py-1'
         onClick={onNext}
         disabled={!hasNext}
         inProgress={inProgress === 'NEXT'}
