@@ -66,6 +66,9 @@ const ArchiveCard = ({ archive }: { archive: Archive }) => {
           <form onSubmit={onLogin}>
             <div className='flex flex-col gap-4 items-start'>
               <NpSubTitle>{archive.archivename}</NpSubTitle>
+
+              <input type='text' value={archive.archivename} hidden readOnly name='username' />
+
               <NpInput
                 autoFocus
                 className='w-full'
