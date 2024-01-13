@@ -48,6 +48,8 @@ export default function Home() {
           )}
           <div>Kirjaudu vierailijaksi nuottiarkistoon, jotta voit käyttää sitä.</div>
 
+          <input type="text" value={archive?.archivename || ''} hidden readOnly name="username" />
+
           <NpInput
             autoFocus
             label='Vierailijan salasana'

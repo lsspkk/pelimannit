@@ -3,16 +3,36 @@
 https://cloud.mongodb.com
 https://fullstackopen.com/osa3/tietojen_tallettaminen_mongo_db_tietokantaan#mongo-db
 
-# Nuotit google drivesta
+# Ylläpitoa
 
-Tehdään joku ihme apps script, ja kutsutaan "ihan tosta vaan"
+Hae/Poista: Muokkaa tiedostoa scripts/manage.ts, ja aja se
+
+      npx ts-node scripts/manage.ts
+
+
+
+## Nuotit google drivesta
+
+Tehty google apps script, ja kutsutaan "ihan tosta vaan"
 rekursiivisesti google driven rajapintaa, lähtien juurikansion id:stä
 
 Esim. Ahjolan pelimannien arkisto
 
 https://script.google.com/u/0/home/projects/1PFZGY6jm_ktiWrvhxuplvzfe1WRlymvTELr7ytcLSQNGUVBfRzf8qkmM/edit
 
-## PDF selaimeen siten, että toimii swipe
+# PDF selaimeen siten, että toimii swipe
+
+## Iframe jonka sisällä googlen sivun aukaisu
+
+Valittu tapa
+
+Toimii, mutta tehty swipe-alue ruudun alareunaan, jotta pystyy käyttämään hiirtä myös pdf:n katseluun. Ei onnistu sivunvaihdon automatisointi bluetooth tms. laitteella.
+
+
+
+## Google drive api, ja blobbailu
+
+Toteutettu, mutta hidas ainakin, kun backend on vercel serverless.
 
 Pelkkä linkki ei toimi, koska tässä tulee googlen javascript pdf viewer
 https://drive.google.com/file/d/1X5Flm-tFo4jVHu8u4p49CkqeEqqxzaiW/view?usp=drivesdk
@@ -44,6 +64,17 @@ https://drive.google.com/file/d/1X5Flm-tFo4jVHu8u4p49CkqeEqqxzaiW/view?usp=drive
 2. näytä blob PDF kuten edellä tai https://www.geeksforgeeks.org/how-to-display-a-pdf-as-an-image-in-react-app-using-url/bg
 
 # lokaalit tiedostot
+
+Tätä käytetty nopeuttamaan nuottien latausta. 
+Toimii android-puhelimellakin, mutta puhelimeen hankala ladata
+tiedostot yhteen hakemistoon, josta ne valittaisiin. 
+Selaimella toimii kauniisti.
+
+Parempii ratkaisu olisi ladata pdf:t tai niistä tehdyt kuvatiedostot 
+omalle serverille backendiksi, ja käyttää aivan normaalia selaimen
+välimuistia näyttämisen nopeuttamiseksi. 
+
+
 
 Secure Context localhostiin
 https://github.com/FiloSottile/mkcert
