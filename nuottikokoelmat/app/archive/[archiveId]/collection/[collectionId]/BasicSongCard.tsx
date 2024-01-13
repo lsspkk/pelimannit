@@ -9,10 +9,12 @@ export const BasicSongCard = ({
   song,
   index,
   onLoadPdf,
+  children,
 }: {
   song: Song
   index: number
   onLoadPdf: (index: number) => void
+  children?: React.ReactNode
 }) => {
   const [isLoading, setIsLoading] = React.useState(false)
   const loadPdf = () => {
@@ -33,6 +35,7 @@ export const BasicSongCard = ({
         <div className='text-md'>{song.songname}</div>
         <div className='text-xs overflow-clip text-clip whitespace-nowrap'>{displayPath(song)}</div>
       </div>
+      {children}
     </NpButtonCard>
   )
 }
