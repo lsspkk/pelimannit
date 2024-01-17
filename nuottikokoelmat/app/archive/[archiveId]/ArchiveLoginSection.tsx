@@ -5,30 +5,36 @@ import React from 'react'
 import { NpInput } from '@/components/NpInput'
 import { ManagingSection } from './page'
 import { NpDialog } from '@/components/NpDialog'
+import { ArchiveRole } from '@/models/archiveUser'
 
 export const ArchiveLoginSection = ({
   archiveId,
   setSection,
+  archive
 }: {
   archiveId: string
+  archive: Archive
   setSection: (section: ManagingSection) => void
 }) => {
-  const [username, setUsername] = React.useState('')
+  const [username, setUsername] = React.useState(`Ylläpito: ${archive?.archivename || ''}`)
   const [password, setPassword] = React.useState('')
+  const [managerChecked, setManagerChecked] = React.useState(false)
   const [error, setError] = React.useState('')
   const { mutate } = useArchiveUser(archiveId)
 
   const onStart = async () => {
+    const role = managerChecked ? ArchiveRole.MANAGER : ArchiveRole.USER
+
     const response = await fetch(`/api/archive/${archiveId}/manage/start`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, role }),
     })
     if (response.ok) {
       setSection('NONE')
-      mutate({ archiveId, username })
+      mutate({ archiveId, username, role })
     } else {
       setError('Virheellinen käyttäjätunnus tai salasana')
     }
@@ -49,6 +55,11 @@ export const ArchiveLoginSection = ({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+
+        <div className='flex flex-row gap-4 items-center'>
+          <input id="manager" type="checkbox" checked={managerChecked} onChange={(e) => setManagerChecked(e.target.checked)} />
+          <label htmlFor="manager">Manageri</label>
+        </div>
 
         <div className='text-red-800 h-8'>{error}</div>
         <div className='flex flex-row gap-4 justify-between'>

@@ -9,6 +9,10 @@ Hae/Poista: Muokkaa tiedostoa scripts/manage.ts, ja aja se
 
       npx ts-node scripts/manage.ts
 
+Luo/testaa arkiston käyttäjän tai ylläpitäjän tai salasana
+
+     node scripts/makepassword.js
+
 
 
 ## Nuotit google drivesta
