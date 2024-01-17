@@ -1,4 +1,4 @@
-const bcrypt = require('./node_modules/bcrypt/bcrypt.js')
+const bcrypt = require('../node_modules/bcrypt/bcrypt.js')
 
 const command = process.argv[2]
 const word = process.argv[3]

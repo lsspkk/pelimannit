@@ -9,6 +9,8 @@ export interface Song extends Partial<Document> {
   tempo?: 'slow' | 'medium' | 'fast'
   year?: number
   archiveId: Types.ObjectId
+  hide?: boolean
+  hideDate?: Date
 }
 
 export type SongNoArchiveId = Omit<Song, 'archiveId'>
@@ -21,6 +23,8 @@ export const SongSchema = new Schema<Song>({
   tempo: { type: String, required: false },
   year: { type: Number, required: false },
   archiveId: { type: Schema.Types.ObjectId, ref: 'Archive' },
+  hide: { type: Boolean, required: false },
+  hideDate: { type: Date, required: false },
 })
 
 export const SongModel = (mongoose.models?.Song || model<Song>('Song', SongSchema)) as unknown as Model<Song>

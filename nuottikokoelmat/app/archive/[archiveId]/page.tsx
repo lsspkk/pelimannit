@@ -87,7 +87,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
               )}
             </div>
           </div>
-          {section === 'LOGIN' && <ArchiveLoginSection archiveId={archiveId} setSection={setSection} />}
+          {section === 'LOGIN' && <ArchiveLoginSection archiveId={archiveId} archive={data} setSection={setSection} />}
           {section === 'MANAGE' && <ArchiveManageSection archiveId={archiveId} setSection={setSection} />}
           {section === 'NONE' && <CollectionList archiveId={data._id} />}
         </React.Fragment>
