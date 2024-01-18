@@ -1,30 +1,33 @@
 import mongoose, { Document, Model, model, Schema, Types } from 'mongoose'
 
 export interface Song extends Partial<Document> {
-  _id: Types.ObjectId
-  songname: string
-  path: string
-  url: string
-  dance?: string
-  tempo?: 'slow' | 'medium' | 'fast'
-  year?: number
-  archiveId: Types.ObjectId
-  hide?: boolean
-  hideDate?: Date
+	_id: Types.ObjectId
+	songname: string
+	path: string
+	url: string
+	dance?: string
+	tempo?: 'slow' | 'medium' | 'fast'
+	year?: number
+	archiveId: Types.ObjectId
+	hide?: boolean
+	hideDate?: Date
+}
+
+export interface SongLite extends Omit<Song, 'archiveId' | '_id'> {
 }
 
 export type SongNoArchiveId = Omit<Song, 'archiveId'>
 
 export const SongSchema = new Schema<Song>({
-  songname: { type: String, required: true },
-  path: { type: String, required: false },
-  url: { type: String, required: true },
-  dance: { type: String, required: false },
-  tempo: { type: String, required: false },
-  year: { type: Number, required: false },
-  archiveId: { type: Schema.Types.ObjectId, ref: 'Archive' },
-  hide: { type: Boolean, required: false },
-  hideDate: { type: Date, required: false },
+	songname: { type: String, required: true },
+	path: { type: String, required: false },
+	url: { type: String, required: true },
+	dance: { type: String, required: false },
+	tempo: { type: String, required: false },
+	year: { type: Number, required: false },
+	archiveId: { type: Schema.Types.ObjectId, ref: 'Archive' },
+	hide: { type: Boolean, required: false },
+	hideDate: { type: Date, required: false },
 })
 
 export const SongModel = (mongoose.models?.Song || model<Song>('Song', SongSchema)) as unknown as Model<Song>
