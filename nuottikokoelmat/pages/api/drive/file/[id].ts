@@ -2,6 +2,7 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { google } from 'googleapis'
+import { getAuth } from '../getAuth'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const fileId = req.query.id as string
@@ -13,14 +14,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return
       }
 
-      const client = await getClient()
+      const auth = await getAuth()
 
-      if (!client) {
+      if (!auth) {
         res.status(500).json({ error: 'no client' })
         return
       }
 
-      const drive = google.drive({ version: 'v3', auth: client })
+      const drive = google.drive({ version: 'v3', auth })
       const response = await drive.files.get({ fileId: fileId, alt: 'media' }, { responseType: 'stream' })
       response.data.pipe(res)
 
@@ -32,19 +33,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log(error)
     res.status(500).json({ error })
   }
-}
-
-const SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-const keyJson = Buffer.from(process.env.CREDENTIALS_BASE64 || '', 'base64').toString('ascii')
-
-async function getClient() {
-  try {
-    return new google.auth.GoogleAuth({
-      credentials: JSON.parse(keyJson),
-      scopes: SCOPES,
-    })
-  } catch (error) {
-    console.log(error)
-  }
-  return null
 }

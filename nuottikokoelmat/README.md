@@ -13,8 +13,6 @@ Luo/testaa arkiston käyttäjän tai ylläpitäjän tai salasana
 
      node scripts/makepassword.js
 
-
-
 ## Nuotit google drivesta
 
 Tehty google apps script, ja kutsutaan "ihan tosta vaan"
@@ -32,14 +30,14 @@ Valittu tapa
 
 Toimii, mutta tehty swipe-alue ruudun alareunaan, jotta pystyy käyttämään hiirtä myös pdf:n katseluun. Ei onnistu sivunvaihdon automatisointi bluetooth tms. laitteella.
 
-
-
 ## Google drive api, ja blobbailu
 
 Toteutettu, mutta hidas ainakin, kun backend on vercel serverless.
 
 Pelkkä linkki ei toimi, koska tässä tulee googlen javascript pdf viewer
 https://drive.google.com/file/d/1X5Flm-tFo4jVHu8u4p49CkqeEqqxzaiW/view?usp=drivesdk
+
+https://developers.google.com/drive/api/reference/rest/v3/files/list
 
 1. lataa serverlessillä pdf,
 
@@ -69,16 +67,14 @@ https://drive.google.com/file/d/1X5Flm-tFo4jVHu8u4p49CkqeEqqxzaiW/view?usp=drive
 
 # lokaalit tiedostot
 
-Tätä käytetty nopeuttamaan nuottien latausta. 
+Tätä käytetty nopeuttamaan nuottien latausta.
 Toimii android-puhelimellakin, mutta puhelimeen hankala ladata
-tiedostot yhteen hakemistoon, josta ne valittaisiin. 
+tiedostot yhteen hakemistoon, josta ne valittaisiin.
 Selaimella toimii kauniisti.
 
-Parempii ratkaisu olisi ladata pdf:t tai niistä tehdyt kuvatiedostot 
+Parempii ratkaisu olisi ladata pdf:t tai niistä tehdyt kuvatiedostot
 omalle serverille backendiksi, ja käyttää aivan normaalia selaimen
-välimuistia näyttämisen nopeuttamiseksi. 
-
-
+välimuistia näyttämisen nopeuttamiseksi.
 
 Secure Context localhostiin
 https://github.com/FiloSottile/mkcert
