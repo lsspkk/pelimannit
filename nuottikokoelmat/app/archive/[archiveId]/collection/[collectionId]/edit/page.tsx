@@ -1,114 +1,87 @@
 'use client'
+import { NpBackButton } from '@/components/NpBackButton'
 import { NpButton } from '@/components/NpButton'
-import { useRouter } from 'next/navigation'
-import React from 'react'
 import { NpInput } from '@/components/NpInput'
+import { NpMain } from '@/components/NpMain'
 import { NpTextArea } from '@/components/NpTextarea'
+import { NpSubTitle } from '@/components/NpTitle'
+import { NpToast } from '@/components/NpToast'
 import { Collection } from '@/models/collection'
 import { useCollection } from '@/models/swrApi'
-import { NpMain } from '@/components/NpMain'
-import { NpSubTitle } from '@/components/NpTitle'
-import { NpBackButton } from '@/components/NpBackButton'
-import { NpToast } from '@/components/NpToast'
+import { useRouter } from 'next/navigation'
+import React from 'react'
 
-export default function Home({
-  params: { collectionId, archiveId },
-}: {
-  params: { collectionId: string; archiveId: string }
-}) {
-  const router = useRouter()
-  const { data, mutate, error, isLoading } = useCollection(collectionId)
-  const [collectionName, setCollectionName] = React.useState(data?.collectionname || '')
-  const [description, setDescription] = React.useState(data?.description || '')
-  const [inProgress, setInProgress] = React.useState(false)
-  const [confirmDelete, setConfirmDelete] = React.useState(false)
-  const [showToast, setShowToast] = React.useState(true)
+export default function Home({ params: { collectionId, archiveId } }: { params: { collectionId: string; archiveId: string } }) {
+	const router = useRouter()
+	const { data, mutate, error, isLoading } = useCollection(collectionId)
+	const [collectionName, setCollectionName] = React.useState(data?.collectionname || '')
+	const [description, setDescription] = React.useState(data?.description || '')
+	const [inProgress, setInProgress] = React.useState(false)
+	const [confirmDelete, setConfirmDelete] = React.useState(false)
+	const [showToast, setShowToast] = React.useState(true)
 
-  const onSaveChanges = async (oldCollection: Collection) => {
-    setInProgress(true)
+	const onSaveChanges = async (oldCollection: Collection) => {
+		setInProgress(true)
 
-    const newCollection: Collection = {
-      ...oldCollection,
-      collectionname: collectionName,
-      description: description,
-      modified: new Date(),
-    }
-    const response = await fetch(`/api/collection/${collectionId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newCollection),
-    })
+		const newCollection: Collection = { ...oldCollection, collectionname: collectionName, description: description, modified: new Date() }
+		const response = await fetch(`/api/collection/${collectionId}`, {
+			method: 'PUT',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(newCollection),
+		})
 
-    if (response.ok) {
-      const data = await response.json()
-      mutate(data)
-      router.back()
-    } else {
-      console.error('Failed to save collection', response)
-    }
-    setInProgress(false)
-  }
+		if (response.ok) {
+			const data = await response.json()
+			mutate(data)
+			router.back()
+		} else {
+			console.error('Failed to save collection', response)
+		}
+		setInProgress(false)
+	}
 
-  const onDelete = async () => {
-    setInProgress(true)
-    const response = await fetch(`/api/collection/${collectionId}`, {
-      method: 'DELETE',
-    })
-    if (!response.ok) {
-      setInProgress(false)
-      console.error('Failed to delete collection', response)
-    } else {
-      setInProgress(false)
-      router.push(`/archive/${archiveId}`)
-    }
-  }
+	const onDelete = async () => {
+		setInProgress(true)
+		const response = await fetch(`/api/collection/${collectionId}`, { method: 'DELETE' })
+		if (!response.ok) {
+			setInProgress(false)
+			console.error('Failed to delete collection', response)
+		} else {
+			setInProgress(false)
+			router.push(`/archive/${archiveId}`)
+		}
+	}
 
-  return (
-    <NpMain title="Kokoelman muokkaus">
-      <NpBackButton onClick={() => router.back()} />
-      {isLoading && <div>Ladataan...</div>}
-      {error && showToast && <NpToast onClose={() => setShowToast(false)}> {JSON.stringify(error)}</NpToast>}
-      {data && (
-        <div className='flex flex-col gap-4 items-start'>
-          <div className='flex flex-col gap-4'>
-            <NpInput
-              label='Nimi'
-              placeholder='Nimi'
-              value={collectionName}
-              onChange={(e) => setCollectionName(e.target.value)}
-            />
-            <NpTextArea
-              label='Kuvaus'
-              placeholder='Kuvaus'
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
+	return (
+		<NpMain title='Kokoelman muokkaus'>
+			<NpBackButton onClick={() => router.back()} />
+			{isLoading && <div>Ladataan...</div>}
+			{error && showToast && <NpToast onClose={() => setShowToast(false)}>{JSON.stringify(error)}</NpToast>}
+			{data && (
+				<div className='flex flex-col gap-4 items-start'>
+					<div className='flex flex-col gap-4'>
+						<NpInput label='Nimi' placeholder='Nimi' value={collectionName} onChange={(e) => setCollectionName(e.target.value)} />
+						<NpTextArea label='Kuvaus' placeholder='Kuvaus' value={description} onChange={(e) => setDescription(e.target.value)} />
 
-            <div className='flex gap-2 justify-end'>
-              <NpButton onClick={() => setConfirmDelete(true)}>Poista</NpButton>
-              <NpButton onClick={() => router.back()}>Peruuta</NpButton>
-              <NpButton onClick={() => onSaveChanges(data)} inProgress={inProgress}>
-                Tallenna
-              </NpButton>
-            </div>
-          </div>
-          {confirmDelete && (
-            <div className='bg-gray-200 border-sm rounded-sm border-gray-400 border p-4 shadow-md w-full'>
-              <div className='flex flex-col gap-4'>
-                <div className='text-xl'>Poistetaanko kokoelma?</div>
-                <div className='flex gap-2 justify-end'>
-                  <NpButton onClick={() => setConfirmDelete(false)}>Peruuta</NpButton>
-                  <NpButton onClick={onDelete} inProgress={inProgress}>
-                    Poista
-                  </NpButton>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </NpMain>
-  )
+						<div className='flex gap-2 justify-end'>
+							<NpButton onClick={() => setConfirmDelete(true)}>Poista</NpButton>
+							<NpButton onClick={() => router.back()}>Keskeytä</NpButton>
+							<NpButton onClick={() => onSaveChanges(data)} inProgress={inProgress}>Tallenna</NpButton>
+						</div>
+					</div>
+					{confirmDelete && (
+						<div className='bg-gray-200 border-sm rounded-sm border-gray-400 border p-4 shadow-md w-full'>
+							<div className='flex flex-col gap-4'>
+								<div className='text-xl'>Poistetaanko kokoelma?</div>
+								<div className='flex gap-2 justify-end'>
+									<NpButton onClick={() => setConfirmDelete(false)}>Keskeytä</NpButton>
+									<NpButton onClick={onDelete} inProgress={inProgress}>Poista</NpButton>
+								</div>
+							</div>
+						</div>
+					)}
+				</div>
+			)}
+		</NpMain>
+	)
 }
