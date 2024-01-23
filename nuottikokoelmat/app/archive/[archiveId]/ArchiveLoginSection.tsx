@@ -46,7 +46,7 @@ export const ArchiveLoginSection = (
 
 				<div className='text-red-800 h-8'>{error}</div>
 				<div className='flex flex-row gap-4 justify-between'>
-					<NpButton variant='secondary' onClick={() => setSection('NONE')}>Peruuta</NpButton>
+					<NpButton variant='secondary' onClick={() => setSection('NONE')}>Keskeytä</NpButton>
 					<NpButton onClick={onStart}>Kirjaudu</NpButton>
 				</div>
 			</div>
