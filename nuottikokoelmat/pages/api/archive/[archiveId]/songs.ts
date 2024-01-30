@@ -1,6 +1,6 @@
 import { dbConnect } from '@/models/dbConnect'
 import { sessionOptions } from '@/models/session'
-import { SongModel } from '@/models/song'
+import { Song, SongModel } from '@/models/song'
 import { buildSongCompare, defaultSortSettings } from '@/models/sortSettings'
 import { withIronSessionApiRoute } from 'iron-session/next'
 import type { NextApiRequest, NextApiResponse } from 'next'
@@ -18,7 +18,9 @@ async function handler (req: NextApiRequest, res: NextApiResponse): Promise<void
 	}
 
 	try {
-		if (hasApi('/api/archive/:archiveId/songs')) {
+		if (req.method === 'PATCH') {
+			patchSongsMongoHandler(req, res, archiveId)
+		} else if (hasApi('/api/archive/:archiveId/songs')) {
 			await apiHandler(req, res, archiveId)
 		} else {
 			await mongoHandler(req, res, archiveId)
@@ -27,6 +29,21 @@ async function handler (req: NextApiRequest, res: NextApiResponse): Promise<void
 		console.log(error)
 		res.status(500).json({ error })
 	}
+}
+
+const patchSongsMongoHandler = async (req: NextApiRequest, res: NextApiResponse, archiveId: string): Promise<void> => {
+	await dbConnect()
+	const songs = req.body as Song[]
+	console.debug('PATCH songs', songs)
+	const updatedSongs = await Promise.all(songs.map(async (song: Song) => {
+		try {
+			return SongModel.findByIdAndUpdate(song._id, song, { new: false }).exec()
+		} catch (error) {
+			console.error('error updating song', song, error)
+			throw { error, song }
+		}
+	}))
+	res.status(200).json(updatedSongs)
 }
 
 const apiHandler = async (req: NextApiRequest, res: NextApiResponse, archiveId: string): Promise<void> => {
@@ -43,7 +60,9 @@ const mongoHandler = async (req: NextApiRequest, res: NextApiResponse, archiveId
 	await dbConnect()
 	if (req.method === 'GET') {
 		console.debug('GET archive', archiveId)
-		const songs = (await SongModel.find({ archiveId }).exec()).sort(buildSongCompare(defaultSortSettings))
+		const songs = (await SongModel.find({ archiveId, hide: { $or: [false, { $exists: false }] } }).exec()).sort(
+			buildSongCompare(defaultSortSettings),
+		)
 		res.status(200).json([...songs])
 	} else {
 		res.status(500).json({ error: 'method not supported' })

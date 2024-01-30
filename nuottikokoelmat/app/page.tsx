@@ -71,7 +71,7 @@ const ArchiveCard = ({ archive }: { archive: Archive }) => {
 							/>
 							{<div className='text-red-900 text-sm min-h-4'>{error}</div>}
 							<div className='flex gap-2 mt-2 justify-between w-full'>
-								<NpButton variant='secondary' onClick={() => setShowLogin(false)}>Keskeytä</NpButton>
+								<NpButton variant='secondary' onClick={() => setShowLogin(false)}>Takaisin</NpButton>
 								<NpButton type='submit' onClick={onLogin}>Kirjaudu</NpButton>
 							</div>
 						</div>

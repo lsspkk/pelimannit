@@ -2,7 +2,7 @@
 
 import { SongLite } from '@/models/song'
 import { buildSongCompare, defaultSortSettings } from '@/models/sortSettings'
-import ahjola_tree from '@/omadata/ahjola_pelimannit_tree.json'
+// import ahjola_tree from '@/omadata/ahjola_pelimannit_tree.json'
 import { drive_v3, google } from 'googleapis'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getAuth } from '../getAuth'
@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 				return
 			}
 
-			const tree = ahjola_tree || await loadAndBuildTree(auth, folderId, res)
+			const tree = await loadAndBuildTree(auth, folderId, res)
 			const songList = buildSongList('/', tree as DriveFile[], []).sort(buildSongCompare(defaultSortSettings))
 			res.status(200).json(songList)
 		} else {
@@ -44,17 +44,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 const loadAndBuildTree = async (auth: any, folderId: string, res: NextApiResponse) => {
-	if (!ahjola_tree) {
-		const drive = google.drive({ version: 'v3', auth })
-		const response = await drive.files.list({ q: `'${folderId}' in parents and trashed=false` })
+	// Use local file for development, to prevent google api quota from being exceeded
+	// if (ahjola_tree) {
+	// 	return ahjola_tree
+	// }
+	const drive = google.drive({ version: 'v3', auth })
+	const response = await drive.files.list({ q: `'${folderId}' in parents and trashed=false` })
 
-		if (!response.data?.files) {
-			res.status(500).json({ error: 'no data' })
-			return
-		}
-		await buildTree(drive, response.data.files)
+	if (!response.data?.files) {
+		res.status(500).json({ error: 'no data' })
+		return []
 	}
-	return ahjola_tree
+	return await buildTree(drive, response.data.files)
 }
 
 async function buildTree (drive: drive_v3.Drive, files: import('googleapis').drive_v3.Schema$File[]) {

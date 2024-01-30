@@ -49,7 +49,7 @@ export const AddCollection = ({ archiveId, onClose }: { archiveId: string; onClo
 					<NpTextArea placeholder='Kuvaus' value={description} onChange={(e) => setDescription(e.target.value)} />
 
 					<div className='flex gap-2 justify-end'>
-						<NpButton onClick={onClose}>Keskeytä</NpButton>
+						<NpButton onClick={onClose}>Takaisin</NpButton>
 						<NpButton onClick={addCollection} inProgress={inProgress}>Lisää</NpButton>
 					</div>
 				</div>

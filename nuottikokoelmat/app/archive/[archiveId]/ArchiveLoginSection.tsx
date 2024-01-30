@@ -17,7 +17,8 @@ export const ArchiveLoginSection = (
 	const [error, setError] = React.useState('')
 	const { mutate } = useArchiveUser(archiveId)
 
-	const onStart = async () => {
+	const onStart = async (e?: React.FormEvent) => {
+		e?.preventDefault()
 		const role = managerChecked ? ArchiveRole.MANAGER : ArchiveRole.USER
 
 		const response = await fetch(`/api/archive/${archiveId}/manage/start`, {
@@ -34,7 +35,7 @@ export const ArchiveLoginSection = (
 	}
 	return (
 		<NpDialog onClose={() => setSection('NONE')}>
-			<div className='flex flex-col gap-4 md:max-w-md'>
+			<form className='flex flex-col gap-4 md:max-w-md'>
 				<div>Kirjaudu ylläpitämään arkistoa</div>
 				<NpInput autoFocus placeholder='Käyttäjätunnus' value={username} onChange={(e) => setUsername(e.target.value)} />
 				<NpInput type='password' placeholder='Salasana' value={password} onChange={(e) => setPassword(e.target.value)} />
@@ -46,10 +47,10 @@ export const ArchiveLoginSection = (
 
 				<div className='text-red-800 h-8'>{error}</div>
 				<div className='flex flex-row gap-4 justify-between'>
-					<NpButton variant='secondary' onClick={() => setSection('NONE')}>Keskeytä</NpButton>
-					<NpButton onClick={onStart}>Kirjaudu</NpButton>
+					<NpButton variant='secondary' onClick={() => setSection('NONE')}>Takaisin</NpButton>
+					<NpButton type='submit' onClick={onStart}>Kirjaudu</NpButton>
 				</div>
-			</div>
+			</form>
 		</NpDialog>
 	)
 }

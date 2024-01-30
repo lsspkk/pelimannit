@@ -65,7 +65,7 @@ export default function Home({ params: { collectionId, archiveId } }: { params: 
 
 						<div className='flex gap-2 justify-end'>
 							<NpButton onClick={() => setConfirmDelete(true)}>Poista</NpButton>
-							<NpButton onClick={() => router.back()}>Keskeytä</NpButton>
+							<NpButton onClick={() => router.back()}>Takaisin</NpButton>
 							<NpButton onClick={() => onSaveChanges(data)} inProgress={inProgress}>Tallenna</NpButton>
 						</div>
 					</div>
@@ -74,7 +74,7 @@ export default function Home({ params: { collectionId, archiveId } }: { params: 
 							<div className='flex flex-col gap-4'>
 								<div className='text-xl'>Poistetaanko kokoelma?</div>
 								<div className='flex gap-2 justify-end'>
-									<NpButton onClick={() => setConfirmDelete(false)}>Keskeytä</NpButton>
+									<NpButton onClick={() => setConfirmDelete(false)}>Takaisin</NpButton>
 									<NpButton onClick={onDelete} inProgress={inProgress}>Poista</NpButton>
 								</div>
 							</div>

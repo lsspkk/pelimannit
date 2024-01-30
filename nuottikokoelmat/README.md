@@ -3,6 +3,16 @@
 https://cloud.mongodb.com
 https://fullstackopen.com/osa3/tietojen_tallettaminen_mongo_db_tietokantaan#mongo-db
 
+
+# Kehitystä
+
+Google Drive API:n quotan kannalta uusien tiedostojen hallintaa varten
+kannattaa tallentaa yksi api-vastaus tiedostoon. katso
+api/drive/folder/[id].ts
+
+
+
+
 # Ylläpitoa
 
 Hae/Poista: Muokkaa tiedostoa scripts/manage.ts, ja aja se
