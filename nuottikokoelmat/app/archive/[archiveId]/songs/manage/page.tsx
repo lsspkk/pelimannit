@@ -5,11 +5,12 @@ import { NpButton } from '@/components/NpButton'
 import { NpMain } from '@/components/NpMain'
 import { NpSubTitle } from '@/components/NpTitle'
 import { NpToast } from '@/components/NpToast'
+import { Archive } from '@/models/archive'
 import { Song, SongLite } from '@/models/song'
 import { useArchive, useArchiveSongs, useArchiveUser } from '@/models/swrApi'
 import { add } from '@dnd-kit/utilities'
 import { drive } from 'googleapis/build/src/apis/drive'
-import { Types } from 'mongoose'
+import { set, Types } from 'mongoose'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 
@@ -26,7 +27,6 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 	const { data: archive, isLoading: isArchiveLoading } = useArchive(archiveId) || {}
 	const { data: songs, isLoading: isSongsLoading } = useArchiveSongs(params.archiveId) || {}
 	const [section, setSection] = React.useState<ManagingSection>('NONE')
-	const { data: archiveUser } = useArchiveUser(archiveId)
 	const [newDriveSongs, setNewDriveSongs] = React.useState<SongLite[]>([])
 
 	const loadDriveFolder = async () => {
@@ -68,7 +68,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 								<NpButton onClick={() => setSection('ARCHIVE')}>Näkyvyys</NpButton>
 							</div>
 						)}
-						{section === 'DRIVE' && <NewDriveSongsSection newDriveSongs={newDriveSongs} setSection={setSection} archiveId={archiveId} />}
+						{section === 'DRIVE' && <NewDriveSongsSection newDriveSongs={newDriveSongs} setSection={setSection} archive={archive} />}
 						{section === 'ARCHIVE' && <ArchiveSongsSection songs={songs} setSection={setSection} archiveId={archiveId} />}
 					</div>
 				</React.Fragment>
@@ -78,11 +78,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 }
 
 const NewDriveSongsSection = (
-	{ newDriveSongs, setSection, archiveId }: {
-		newDriveSongs: SongLite[]
-		setSection: (section: ManagingSection) => void
-		archiveId: string
-	},
+	{ newDriveSongs, setSection, archive }: { newDriveSongs: SongLite[]; setSection: (section: ManagingSection) => void; archive: Archive },
 ) => {
 	const [newSongs, setNewSongs] = React.useState<SongLite[]>([...newDriveSongs])
 
@@ -112,10 +108,11 @@ const NewDriveSongsSection = (
 	}
 
 	const onAddSongs = async () => {
-		const response = await fetch(`/api/archive/${archiveId}/songs`, {
+		const postSongs = newSongs.map((song) => ({ ...song, archiveId: archive._id }))
+		const response = await fetch(`/api/song`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(newSongs),
+			body: JSON.stringify(postSongs),
 		})
 		if (response.ok) {
 			setSection('NONE')
@@ -150,7 +147,7 @@ const NewDriveSongsSection = (
 						</thead>
 						<tbody>
 							{newDriveSongs.map((song, index) => (
-								<tr key={index} className='text-sm'>
+								<tr key={`newDrive-songs-${song.path + song.songname}`} className='text-sm'>
 									<td>
 										<div className='flex flex-col gap-4 justify-start w-full'>
 											<div className='text-xs'>{song.path}</div>
@@ -183,10 +180,9 @@ const NewDriveSongsSection = (
 const ArchiveSongsSection = (
 	{ songs, setSection, archiveId }: { songs: Song[]; setSection: (section: ManagingSection) => void; archiveId: string },
 ) => {
-	const visibleSongIds = new Set<string>(songs.filter((song) => !song.hide).map((song) => String(song._id)))
-
 	const [hideSongIds, setHideSongIds] = React.useState<string[]>([])
 	const [showSongIds, setShowSongIds] = React.useState<string[]>([])
+	const [isSaving, setIsSaving] = React.useState<boolean>(false)
 
 	const onToggleHidden = (objectId: Types.ObjectId, hide: boolean) => {
 		const id = objectId.toString()
@@ -200,8 +196,17 @@ const ArchiveSongsSection = (
 	}
 
 	const saveSongVisibilityChanges = async () => {
-		const response = await fetch(`/api/archive/${archiveId}/songs/visibility`, {
-			method: 'POST',
+		setIsSaving(true)
+
+		// TODO fix this
+		const patchSongs = songs.map((song) => ({
+			...song,
+			hide: hideSongIds.includes(song._id.toString()) ? true : song.hide,
+			hideDate: hideSongIds.includes(song._id.toString()) ? new Date() : song.hideDate,
+		}))
+
+		const response = await fetch(`/api/archive/${archiveId}/songs`, {
+			method: 'PATCH',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ hideSongIds, showSongIds }),
 		})
@@ -210,6 +215,7 @@ const ArchiveSongsSection = (
 		} else {
 			console.error('Failed to save song visibility changes', response)
 		}
+		setIsSaving(false)
 	}
 
 	const hasChanges = hideSongIds.length > 0 || showSongIds.length > 0
@@ -243,7 +249,7 @@ const ArchiveSongsSection = (
 								<input
 									id={`add-drive-song-checkbox-${song._id}-index`}
 									type='checkbox'
-									checked={song.hide || hideSongIds.includes(song._id.toString())}
+									checked={song.hide ?? hideSongIds.includes(song._id.toString())}
 									onChange={(e) => onToggleHidden(song._id, e.target.checked)}
 								/>
 							</td>
@@ -253,8 +259,8 @@ const ArchiveSongsSection = (
 			</table>
 
 			<div className='flex flex-row gap-4 justify-end'>
-				<NpButton variant='secondary' onClick={() => setSection('NONE')}>Keskeytä</NpButton>
-				<NpButton onClick={saveSongVisibilityChanges} disabled={!hasChanges}>Tallenna</NpButton>
+				<NpButton disabled={isSaving} variant='secondary' onClick={() => setSection('NONE')}>Keskeytä</NpButton>
+				<NpButton inProgress={isSaving} onClick={saveSongVisibilityChanges} disabled={!hasChanges}>Tallenna</NpButton>
 			</div>
 		</div>
 	)
