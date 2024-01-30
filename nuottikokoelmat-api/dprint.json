@@ -18,25 +18,20 @@
     "newLineKind": "lf",
     "operatorPosition": "nextLine",
     "preferHanging": false,
-    "quoteStyle": "preferDouble",
+    "quoteStyle": "preferSingle",
     "semiColons": "asi",
     "spaceSurroundingProperties": true,
     "trailingCommas": "onlyMultiLine",
     "typeAnnotation.spaceBeforeColon": false,
     "typeAssertion.spaceBeforeExpression": true,
-    "useTabs": true 
+    "useTabs": true,
+    "jsx.quoteStyle": "preferSingle"
   },
-  "json": {
-  },
-  "markdown": {
-  },
-  "toml": {
-  },
+  "json": {},
+  "markdown": {},
+  "toml": {},
   "includes": ["**/*.{ts,tsx,js,jsx,cjs,mjs,json,md,toml}"],
-  "excludes": [
-    "**/node_modules",
-    "**/*-lock.json"
-  ],
+  "excludes": ["**/node_modules", "**/*-lock.json"],
   "plugins": [
     "https://plugins.dprint.dev/typescript-0.88.5.wasm",
     "https://plugins.dprint.dev/json-0.19.1.wasm",
