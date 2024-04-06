@@ -1,8 +1,10 @@
+import { ArchiveModel } from '@/models/archive'
 import { dbConnect } from '@/models/dbConnect'
 import { sessionOptions } from '@/models/session'
 import { SongModel } from '@/models/song'
 import { buildSongCompare, defaultSortSettings } from '@/models/sortSettings'
 import { withIronSessionApiRoute } from 'iron-session/next'
+import { Types } from 'mongoose'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { hasApi, secureFetch } from '../../config'
 
@@ -34,6 +36,19 @@ const apiHandler = async (req: NextApiRequest, res: NextApiResponse, archiveId: 
 		const response = await secureFetch(`/api/v1/archive/${archiveId}/songs`)
 		const json = await response.json()
 		res.status(response.status).json(json)
+	} else if (req.method === 'PATCH') {
+		if (req.session?.archiveUser?.role !== 'manager') {
+			res.status(401).json({ error: 'not authorized' })
+			return
+		}
+
+		const response = await secureFetch(`/api/v1/archive/${archiveId}/songs`, {
+			method: 'PATCH',
+			body: JSON.stringify(req.body),
+			headers: { 'Content-Type': 'application/json' },
+		})
+		const json = await response.json()
+		res.status(response.status).json(json)
 	} else {
 		res.status(500).json({ error: 'method not supported' })
 	}
@@ -45,6 +60,23 @@ const mongoHandler = async (req: NextApiRequest, res: NextApiResponse, archiveId
 		console.debug('GET archive', archiveId)
 		const songs = (await SongModel.find({ archiveId }).exec()).sort(buildSongCompare(defaultSortSettings))
 		res.status(200).json([...songs])
+	} else if (req.method === 'PATCH') {
+		if (req.session?.archiveUser?.role !== 'manager') {
+			res.status(401).json({ error: 'not authorized' })
+			return
+		}
+
+		const body = req.body as { hideSongIds: string[]; showSongIds: string[] }
+		const { hideSongIds, showSongIds } = body
+		const hidden = await SongModel.updateMany({ _id: { $in: hideSongIds.map((id) => new Types.ObjectId(id)) } }, {
+			hide: true,
+			hideDate: new Date(),
+		})
+		const shown = await SongModel.updateMany({ _id: { $in: showSongIds.map((id) => new Types.ObjectId(id)) } }, {
+			hide: false,
+			hideDate: undefined,
+		})
+		return res.status(200).json({ hidden, shown })
 	} else {
 		res.status(500).json({ error: 'method not supported' })
 	}

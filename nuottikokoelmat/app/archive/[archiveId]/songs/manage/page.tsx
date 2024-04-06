@@ -2,6 +2,7 @@
 
 import { NpBackButton } from '@/components/NpBackButton'
 import { NpButton } from '@/components/NpButton'
+import { NpInput } from '@/components/NpInput'
 import { NpMain } from '@/components/NpMain'
 import { NpSubTitle } from '@/components/NpTitle'
 import { NpToast } from '@/components/NpToast'
@@ -12,7 +13,7 @@ import { add } from '@dnd-kit/utilities'
 import { drive } from 'googleapis/build/src/apis/drive'
 import { set, Types } from 'mongoose'
 import { useRouter } from 'next/navigation'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 // show/hide archive songs
 // add google drive songs to archive
@@ -25,12 +26,16 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 	const { archiveId } = params || {}
 	// @ts-ignore
 	const { data: archive, isLoading: isArchiveLoading } = useArchive(archiveId) || {}
-	const { data: songs, isLoading: isSongsLoading } = useArchiveSongs(params.archiveId) || {}
+	const { data: songs, isLoading: isSongsLoading, isValidating } = useArchiveSongs(params.archiveId) || {}
 	const [section, setSection] = React.useState<ManagingSection>('NONE')
 	const [newDriveSongs, setNewDriveSongs] = React.useState<SongLite[]>([])
+	const [errors, setErrors] = React.useState<string[]>([])
+	const [folderId, setFolderId] = React.useState<string>('')
+	const [folderFetchInProgress, setFolderFetchInProgress] = React.useState<boolean>(false)
 
 	const loadDriveFolder = async () => {
-		const response = await fetch(`/api/drive/folder/${archiveId}`)
+		setFolderFetchInProgress(true)
+		const response = await fetch(`/api/drive/folder/${folderId}`)
 		if (response.ok) {
 			const allDriveSongs: SongLite[] = await response.json()
 			const knownPathNames = songs?.map((song) => (song.path + song.songname).normalize()) || []
@@ -39,10 +44,25 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 			setNewDriveSongs(newSongs)
 			setSection('DRIVE')
 		} else {
-			console.error('Failed to load drive folder', response)
+			const text = await response.text()
+			setErrors([...errors, `Kansion lataus epäonnistui: ${response.status}, ${text}`])
 		}
+		setFolderFetchInProgress(false)
 	}
-	const isLoading = isArchiveLoading || isSongsLoading
+
+	useEffect(() => {
+		if (folderId.length === 0 && archive?.driveId) {
+			setFolderId(archive.driveId)
+		}
+	}, [archive?.driveId, folderId])
+
+	const removeError = (index: number) => {
+		const newErrors = [...errors]
+		newErrors.splice(index, 1)
+		setErrors(newErrors)
+	}
+
+	const isLoading = isArchiveLoading || isSongsLoading || isValidating
 
 	return (
 		<NpMain title='Arkisto'>
@@ -50,7 +70,9 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 
 			{archive && songs && (
 				<React.Fragment>
-					<NpBackButton onClick={() => router.push(`/archive/${archiveId}`)} />
+					<NpBackButton onClick={() => section === 'NONE' ? router.push(`/archive/${archiveId}`) : setSection('NONE')} />
+
+					{errors.map((error, index) => <NpToast key={`error-${index}-${error}`} onClose={() => removeError(index)}>{error}</NpToast>)}
 
 					<div className='flex gap-4 w-full items-start justify-start flex-col pb-10'>
 						<div className='w-full'>
@@ -62,7 +84,16 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 									Lataamalla ajantasainen tiedostolista ja näe mahdolliset uudet tiedostot. Lisää tiedostot arkistoon joko
 									kappalelistauksessa näkyvänä tai piilotettuna.
 								</p>
-								<NpButton onClick={loadDriveFolder}>Tiedostolista</NpButton>
+
+								<NpInput
+									label='Google Drive -kansion ID'
+									value={folderId}
+									onChange={(e) => setFolderId(e.target.value)}
+								/>
+
+								<NpButton disabled={folderId.length < 2} onClick={loadDriveFolder} inProgress={folderFetchInProgress}>
+									Tiedostolista
+								</NpButton>
 
 								<p className='pt-8'>Muokkaa arkiston tiedostojen näkyvyyttä kappalelistauksessa.</p>
 								<NpButton onClick={() => setSection('ARCHIVE')}>Näkyvyys</NpButton>
@@ -81,6 +112,8 @@ const NewDriveSongsSection = (
 	{ newDriveSongs, setSection, archive }: { newDriveSongs: SongLite[]; setSection: (section: ManagingSection) => void; archive: Archive },
 ) => {
 	const [newSongs, setNewSongs] = React.useState<SongLite[]>([...newDriveSongs])
+	const { mutate } = useArchiveSongs(archive._id?.toString() || '')
+	const [isSaving, setIsSaving] = React.useState<boolean>(false)
 
 	const onToggleHidden = (index: number) => {
 		const newChanges = [...newSongs]
@@ -108,17 +141,20 @@ const NewDriveSongsSection = (
 	}
 
 	const onAddSongs = async () => {
+		setIsSaving(true)
 		const postSongs = newSongs.map((song) => ({ ...song, archiveId: archive._id }))
-		const response = await fetch(`/api/song`, {
+		const response = await fetch(`/api/song/array`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(postSongs),
 		})
 		if (response.ok) {
 			setSection('NONE')
+			mutate()
 		} else {
 			console.error('Failed to add songs', response)
 		}
+		setIsSaving(false)
 	}
 
 	return (
@@ -129,7 +165,6 @@ const NewDriveSongsSection = (
 			</div>
 
 			{newDriveSongs.length === 0 && <div>Ei uusia kappaleita Google Drivessä</div>}
-			<NpButton className='w-28 mb-2 self-end' onClick={() => setSection('NONE')}>Takaisin</NpButton>
 
 			{newDriveSongs.length > 0 && (
 				<div className='flex flex-col gap-4 w-full pt-6 md:pt-12'>
@@ -169,7 +204,7 @@ const NewDriveSongsSection = (
 
 					<div className='flex flex-row gap-4 justify-end'>
 						<NpButton variant='secondary' onClick={() => setSection('NONE')}>Keskeytä</NpButton>
-						<NpButton onClick={onAddSongs}>Lisää</NpButton>
+						<NpButton inProgress={isSaving} onClick={onAddSongs}>Lisää</NpButton>
 					</div>
 				</div>
 			)}
@@ -183,6 +218,7 @@ const ArchiveSongsSection = (
 	const [hideSongIds, setHideSongIds] = React.useState<string[]>([])
 	const [showSongIds, setShowSongIds] = React.useState<string[]>([])
 	const [isSaving, setIsSaving] = React.useState<boolean>(false)
+	const { mutate } = useArchiveSongs(archiveId)
 
 	const onToggleHidden = (objectId: Types.ObjectId, hide: boolean) => {
 		const id = objectId.toString()
@@ -211,6 +247,7 @@ const ArchiveSongsSection = (
 			body: JSON.stringify({ hideSongIds, showSongIds }),
 		})
 		if (response.ok) {
+			await mutate()
 			setSection('NONE')
 		} else {
 			console.error('Failed to save song visibility changes', response)
@@ -221,13 +258,11 @@ const ArchiveSongsSection = (
 	const hasChanges = hideSongIds.length > 0 || showSongIds.length > 0
 
 	return (
-		<div className='flex flex-col gap-4 w-full pt-12 md:pt-24'>
-			<div className='w-full'>
+		<div className='flex flex-col gap-4 w-full pt-4 md:pt-12'>
+			<div className='w-full pb-4'>
 				<NpSubTitle>Arkiston tiedostojen näkyvyys</NpSubTitle>
 				<p>Voit piilottaa arkiston tiedostoja näkymästä kappalelistauksessa.</p>
 			</div>
-
-			<NpButton className='w-28 mt-12 self-end' onClick={() => setSection('NONE')}>Takaisin</NpButton>
 
 			<table>
 				<thead>
@@ -249,7 +284,7 @@ const ArchiveSongsSection = (
 								<input
 									id={`add-drive-song-checkbox-${song._id}-index`}
 									type='checkbox'
-									checked={song.hide ?? hideSongIds.includes(song._id.toString())}
+									checked={(!showSongIds.includes(song._id.toString()) && song.hide) || hideSongIds.includes(song._id.toString())}
 									onChange={(e) => onToggleHidden(song._id, e.target.checked)}
 								/>
 							</td>

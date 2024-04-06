@@ -29,6 +29,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 		const response = await fetch(`/api/archive/${archiveId}/manage/stop`)
 		if (response.ok) {
 			mutateArchiveUser({ archiveId: '', username: '', role: ArchiveRole.USER })
+			setSection('NONE')
 		} else {
 			console.error('Failed to stop managing archive', response)
 		}
@@ -81,13 +82,10 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 							{section === 'NONE' && archiveUser?.archiveId === archiveId && (
 								<NpButton className='' onClick={() => setSection('MANAGE')}>Asetukset</NpButton>
 							)}
-							{section === 'NONE' && archiveUser?.archiveId === archiveId && (
-								<NpButton className='' onClick={onStop}>Lopeta ylläpito</NpButton>
-							)}
 						</div>
 					</div>
 					{section === 'LOGIN' && <ArchiveLoginSection archiveId={archiveId} archive={data} setSection={setSection} />}
-					{section === 'MANAGE' && <ArchiveManageSection archiveId={archiveId} setSection={setSection} />}
+					{section === 'MANAGE' && <ArchiveManageSection archiveId={archiveId} setSection={setSection} onStop={onStop} />}
 					{section === 'NONE' && <CollectionList archiveId={data._id} />}
 				</React.Fragment>
 			)}
