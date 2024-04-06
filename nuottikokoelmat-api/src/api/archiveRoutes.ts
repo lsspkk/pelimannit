@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify'
 import { Archive, ArchiveModel } from '../models/archive'
 import { SongModel, Song } from '../models/song'
 import { securityPreHandler } from '../securityPreHandler'
+import { Types } from 'mongoose'
 
 interface ArchiveId {
   Params: {
@@ -95,6 +96,32 @@ export const archiveRoutes: FastifyPluginAsync<{ prefix: string }> = async (fast
         return a.path.localeCompare(b.path) * -1 || a.songname.localeCompare(b.songname)
       })
       return reply.code(200).send(songs)
+    } catch (error) {
+      request.log.error(error)
+      return reply.send(500)
+    }
+  })
+
+  fastify.patch<ArchiveId>('/api/v1/archive/:archiveId/songs', {}, async (request, reply) => {
+    try {
+      const body = request.body as { hideSongIds: string[]; showSongIds: string[] }
+      const { hideSongIds, showSongIds } = body
+      console.debug({ hideSongIds, showSongIds })
+      const hidden = await SongModel.updateMany(
+        { _id: { $in: hideSongIds.map((id) => new Types.ObjectId(id)) } },
+        {
+          hide: true,
+          hideDate: new Date(),
+        }
+      )
+      const shown = await SongModel.updateMany(
+        { _id: { $in: showSongIds.map((id) => new Types.ObjectId(id)) } },
+        {
+          hide: false,
+          hideDate: undefined,
+        }
+      )
+      return reply.code(200).send({ hidden, shown })
     } catch (error) {
       request.log.error(error)
       return reply.send(500)

@@ -2,7 +2,7 @@
 
 import { SongLite } from '@/models/song'
 import { buildSongCompare, defaultSortSettings } from '@/models/sortSettings'
-import ahjola_tree from '@/omadata/ahjola_pelimannit_tree.json'
+import { readFile } from 'fs/promises'
 import { drive_v3, google } from 'googleapis'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getAuth } from '../getAuth'
@@ -14,9 +14,19 @@ export interface DriveFile {
 	parents?: string[]
 	children?: DriveFile[]
 }
+
+const getDevelopmentTree = async () => {
+	const file = process.env.DEVELOPMENT_TREE_FILE
+	if (!file) {
+		return undefined
+	}
+	const tree = await readFile(file, { encoding: 'utf-8' })
+	return JSON.parse(tree) as DriveFile[]
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
 	const folderId = req.query.id as string
-
+	// const folderId = '1I1oqb0G61WaF_j3pdKwvf7ymbXJ-7N5K'
 	try {
 		if (req.method === 'GET') {
 			if (!process.env.CREATE_PASSWORD) {
@@ -31,7 +41,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 				return
 			}
 
-			const tree = ahjola_tree || await loadAndBuildTree(auth, folderId, res)
+			const tree = await loadAndBuildTree(auth, folderId, res)
+			console.debug('tree', tree)
 			const songList = buildSongList('/', tree as DriveFile[], []).sort(buildSongCompare(defaultSortSettings))
 			res.status(200).json(songList)
 		} else {
@@ -44,17 +55,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 const loadAndBuildTree = async (auth: any, folderId: string, res: NextApiResponse) => {
-	if (!ahjola_tree) {
-		const drive = google.drive({ version: 'v3', auth })
-		const response = await drive.files.list({ q: `'${folderId}' in parents and trashed=false` })
-
-		if (!response.data?.files) {
-			res.status(500).json({ error: 'no data' })
-			return
-		}
-		await buildTree(drive, response.data.files)
+	const developmentTree = await getDevelopmentTree()
+	if (developmentTree) {
+		return developmentTree
 	}
-	return ahjola_tree
+	console.debug('11')
+	const drive = google.drive({ version: 'v3', auth })
+	const response = await drive.files.list({ q: `'${folderId}' in parents and trashed=false` })
+	console.debug('11', JSON.stringify(response.data, null, 2))
+	if (!response.data?.files) {
+		res.status(500).json({ error: 'no data' })
+		return undefined
+	}
+	const files = response.data.files as DriveFile[]
+	await buildTree(drive, files)
+	return files
 }
 
 async function buildTree (drive: drive_v3.Drive, files: import('googleapis').drive_v3.Schema$File[]) {
@@ -64,13 +79,15 @@ async function buildTree (drive: drive_v3.Drive, files: import('googleapis').dri
 		}
 
 		const r = await drive.files.list({ q: `'${file.id}' in parents and trashed=false` })
+
+		console.debug('buildTree', file.id, file.name, r.data.files)
 		file.children = (r.data.files as DriveFile[]) || []
 		await buildTree(drive, file.children)
 	}
 }
 
-function buildSongList (parentPath: string, ahjola_tree: DriveFile[], songs: SongLite[] = []) {
-	for (const file of ahjola_tree) {
+function buildSongList (parentPath: string, driveFiles: DriveFile[], songs: SongLite[] = []) {
+	for (const file of driveFiles) {
 		if (file.mimeType === 'application/vnd.google-apps.folder' && file.children) {
 			for (const child of file.children) {
 				buildSongList(`${parentPath}${file.name}/`, [child], songs)
