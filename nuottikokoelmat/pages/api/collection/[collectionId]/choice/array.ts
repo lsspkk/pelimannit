@@ -4,7 +4,7 @@ import { ChoiceModel } from '../../../../../models/choice'
 import { Types } from 'mongoose'
 import { sessionOptions } from '@/models/session'
 import { withIronSessionApiRoute } from 'iron-session/next'
-import { isAuthorized } from '@/pages/api/choice'
+import { isAuthorized } from '@/pages/api/auth'
 import { hasApi, secureFetch } from '@/pages/api/config'
 
 async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {

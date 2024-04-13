@@ -1,26 +1,18 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { dbConnect } from '@/models/dbConnect'
-import { Song, SongModel } from '@/models/song'
+import { SongModel } from '@/models/song'
 import { sessionOptions } from '@/models/session'
 import { withIronSessionApiRoute } from 'iron-session/next'
-import { Readable, pipeline } from 'stream'
-import axios from 'axios'
 import { google } from 'googleapis'
-import path from 'path'
+import { isArchiveVisitor } from '@/pages/api/auth'
 
 async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
-  if (!req.query.archiveId) {
-    res.status(400).json({ error: 'archiveId missing' })
-    return
-  }
   if (!req.query.id) {
     res.status(400).json({ error: 'id missing' })
     return
   }
 
-  const archiveId = typeof req.query.archiveId === 'string' ? req.query.archiveId : req.query.archiveId[0]
-  if (req.session?.archiveVisitor?.archiveId !== archiveId) {
-    res.status(401).json({ error: 'not logged in' })
+  if (!isArchiveVisitor(req, res)) {
     return
   }
   const id = typeof req.query.id === 'string' ? req.query.id : req.query.id[0]

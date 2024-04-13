@@ -2,9 +2,9 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { dbConnect } from '../../../../../models/dbConnect'
 import { ChoiceModel, ChoiceOrder } from '../../../../../models/choice'
 import { sessionOptions } from '@/models/session'
-import { withIronSessionApiRoute } from 'iron-session/next'
-import { isAuthorized } from '@/pages/api/choice'
+import { isAuthorized } from '@/pages/api/auth'
 import { hasApi, secureFetch } from '@/pages/api/config'
+import { withIronSessionApiRoute } from 'iron-session/next'
 
 async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   try {
@@ -63,10 +63,7 @@ const mongoHandler = async (req: NextApiRequest, res: NextApiResponse, collectio
     }
 
     const bulkOps = objectsToUpdate.map((choice) => ({
-      updateOne: {
-        filter: { _id: choice._id },
-        update: { index: choice.index },
-      },
+      updateOne: { filter: { _id: choice._id }, update: { index: choice.index } },
     }))
     const saved = await ChoiceModel.bulkWrite(bulkOps)
     res.status(201).json(JSON.parse(JSON.stringify(saved)))
