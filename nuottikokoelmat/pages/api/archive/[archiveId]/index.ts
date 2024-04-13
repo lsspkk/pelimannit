@@ -1,9 +1,9 @@
-import { Archive, ArchiveModel } from '../../../../models/archive'
+import { Archive, ArchiveModel } from '@/models/archive'
 
+import { dbConnect } from '@/models/dbConnect'
+import { sessionOptions } from '@/models/session'
 import { withIronSessionApiRoute } from 'iron-session/next'
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { dbConnect } from '../../../../models/dbConnect'
-import { sessionOptions } from '../../../../models/session'
 import { hasApi, secureFetch } from '../../config'
 
 async function handler (req: NextApiRequest, res: NextApiResponse): Promise<void> {
