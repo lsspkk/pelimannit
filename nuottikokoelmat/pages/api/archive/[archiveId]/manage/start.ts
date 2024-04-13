@@ -5,58 +5,65 @@ import { get } from 'http'
 import { withIronSessionApiRoute } from 'iron-session/next'
 import { NextApiRequest, NextApiResponse } from 'next'
 
-async function startManageRoute (req: NextApiRequest, res: NextApiResponse) {
-	const archiveId = req.query.archiveId as string
-	if (!archiveId) {
-		res.status(400).json({ error: 'archiveId missing' })
-		return
-	}
-	if (req.session?.archiveVisitor?.archiveId !== archiveId) {
-		res.status(401).json({ error: 'not logged in' })
-		return
-	}
+async function startManageRoute(req: NextApiRequest, res: NextApiResponse) {
+  const archiveId = req.query.archiveId as string
+  if (!archiveId) {
+    res.status(400).json({ error: 'archiveId missing' })
+    return
+  }
+  if (req.session?.archiveVisitor?.archiveId !== archiveId) {
+    res.status(401).json({ error: 'not logged in' })
+    return
+  }
 
-	const { username, password, role } = await req.body
-	console.debug('startManageRoute', { username, password })
+  const { username, password, role } = await req.body
+  //console.debug('startManageRoute', { username, password })
 
-	try {
-		const passwordHash = getPasswordHash(archiveId, role)
-		if (!passwordHash) {
-			res.status(401).json({ message: 'Unauthorized, you have no password' })
-			return
-		}
+  try {
+    const passwordHash = getPasswordHash(archiveId, role)
+    if (!passwordHash) {
+      res.status(401).json({ message: 'Unauthorized, you have no password' })
+      return
+    }
 
-		const passwordMatch = bcrypt.compareSync(password, passwordHash)
-		if (passwordMatch) {
-			const archiveUser = { username, archiveId, role }
-			req.session.archiveUser = archiveUser
-			await req.session.save()
-			res.json(archiveUser)
-			return
-		}
+    const passwordMatch = bcrypt.compareSync(password, passwordHash)
+    if (passwordMatch) {
+      const archiveUser = { username, archiveId, role }
+      req.session.archiveUser = archiveUser
+      await req.session.save()
+      res.json(archiveUser)
+      return
+    }
 
-		res.status(401).json({ message: 'Unauthorized, wrong password' })
-	} catch (error) {
-		console.log(error)
-		res.status(500).json({ message: (error as Error).message })
-	}
+    res.status(401).json({ message: 'Unauthorized, wrong password' })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: (error as Error).message })
+  }
 }
 
 const getPasswordHash = (archiveId: string, role: string): string | null => {
-	const envPasswords = role === ArchiveRole.MANAGER ? process.env.ARCHIVE_MANAGER_PASSWORDS : process.env.ARCHIVE_USER_PASSWORDS
+  const envPasswords =
+    role === ArchiveRole.MANAGER ? process.env.ARCHIVE_MANAGER_PASSWORDS : process.env.ARCHIVE_USER_PASSWORDS
 
-	console.log({ envPasswords })
-	const passwords = envPasswords?.split('---')
+  apiConsole({ envPasswords })
+  const passwords = envPasswords?.split('---')
 
-	console.debug('startManageRoute', { passwords })
-	if (!passwords) {
-		return null
-	}
-	const archivePasswords = passwords.filter((p) => p.split(':')[0] === archiveId)
-	if (archivePasswords.length === 0) {
-		return null
-	}
-	return archivePasswords[0].split(':')[1]
+  apiConsole('startManageRoute', { passwords })
+  if (!passwords) {
+    return null
+  }
+  const archivePasswords = passwords.filter((p) => p.split(':')[0] === archiveId)
+  if (archivePasswords.length === 0) {
+    return null
+  }
+  return archivePasswords[0].split(':')[1]
+}
+
+const apiConsole = (message?: any, ...optionalParams: any[]) => {
+  if (process.env.LOGLEVEL_DEBUG) {
+    console.debug(message, optionalParams)
+  }
 }
 
 export default withIronSessionApiRoute(startManageRoute, sessionOptions)

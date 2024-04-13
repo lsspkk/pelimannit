@@ -5,7 +5,7 @@ import { Song } from '@/models/song'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { NpButtonCard } from '@/components/NpButtonCard'
-import { DragIcon } from './DragIcon'
+import { DragIcon } from '@/components/icons/DragIcon'
 import { displayPath } from './displayPath'
 
 export const DnDSongCard = ({ song, index, id }: { song: Song; index: number; id: string }) => {

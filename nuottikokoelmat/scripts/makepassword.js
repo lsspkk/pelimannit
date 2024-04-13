@@ -11,4 +11,6 @@ if (command === 'make') {
 } else if (command === 'compare') {
   const result = bcrypt.compareSync(word, oldhash)
   console.log(result)
+} else {
+  console.log('Usage: node makepassword.js make|compare word [oldhash]')
 }
