@@ -30,7 +30,8 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 
   const loadDriveFolder = async () => {
     setFolderFetchInProgress(true)
-    const response = await fetch(`/api/drive/folder/${folderId}`)
+
+    const response = await fetch(`/api/archive/${archiveId}/manage/drive/folder/${folderId}`)
     if (response.ok) {
       const allDriveSongs: SongLite[] = await response.json()
       const knownPathNames = songs?.map((song) => (song.path + song.songname).normalize()) || []
