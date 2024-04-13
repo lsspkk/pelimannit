@@ -48,7 +48,7 @@ export const NewDriveSongsSection = ({
   const onAddSongs = async () => {
     setIsSaving(true)
     const postSongs = newSongs.map((song) => ({ ...song, archiveId: archive._id }))
-    const response = await fetch(`/api/song/array`, {
+    const response = await fetch(`/api/archive/${archive._id}/manage/songs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(postSongs),
