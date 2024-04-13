@@ -1,36 +1,36 @@
 // backend for testing google drive api
 
-import { driveAuth } from '@/pages/api/driveAuth'
+import { driveAuth } from '@/pages/api/auth'
 import { google } from 'googleapis'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
-	const fileId = req.query.id as string
+  const fileId = req.query.id as string
 
-	try {
-		if (req.method === 'GET') {
-			if (!process.env.CREATE_PASSWORD) {
-				res.status(401).json({ error: 'go away' })
-				return
-			}
+  try {
+    if (req.method === 'GET') {
+      if (!process.env.CREATE_PASSWORD) {
+        res.status(401).json({ error: 'go away' })
+        return
+      }
 
-			const auth = await driveAuth()
+      const auth = await driveAuth()
 
-			if (!auth) {
-				res.status(500).json({ error: 'no client' })
-				return
-			}
+      if (!auth) {
+        res.status(500).json({ error: 'no client' })
+        return
+      }
 
-			const drive = google.drive({ version: 'v3', auth })
-			const response = await drive.files.get({ fileId: fileId, alt: 'media' }, { responseType: 'stream' })
-			response.data.pipe(res)
+      const drive = google.drive({ version: 'v3', auth })
+      const response = await drive.files.get({ fileId: fileId, alt: 'media' }, { responseType: 'stream' })
+      response.data.pipe(res)
 
-			res.status(200)
-		} else {
-			res.status(500).json({ error: 'method not supported' })
-		}
-	} catch (error) {
-		console.log(error)
-		res.status(500).json({ error })
-	}
+      res.status(200)
+    } else {
+      res.status(500).json({ error: 'method not supported' })
+    }
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error })
+  }
 }

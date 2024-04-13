@@ -1,8 +1,11 @@
+import { ArchiveRole } from '@/models/archiveUser'
+import { sessionOptions } from '@/models/session'
 import { SongLite } from '@/models/song'
 import { buildSongCompare, defaultSortSettings } from '@/models/sortSettings'
-import { driveAuth } from '@/pages/api/driveAuth'
+import { hasArchiveAuth, driveAuth } from '@/pages/api/auth'
 import { readFile } from 'fs/promises'
 import { drive_v3, google } from 'googleapis'
+import { withIronSessionApiRoute } from 'iron-session/next'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 export interface DriveFile {
@@ -23,15 +26,8 @@ const getDevelopmentTree = async () => {
   return JSON.parse(tree) as DriveFile[]
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
-  const archiveId = req.query.archiveId as string
-  if (!archiveId) {
-    res.status(400).json({ error: 'archiveId missing' })
-    return
-  }
-
-  if ((!req.session?.archiveUser || req.session?.archiveUser.archiveId !== archiveId) && !process.env.CREATE_PASSWORD) {
-    res.status(401).json({ error: 'not authorized' })
+async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
+  if (!hasArchiveAuth(req, res, ArchiveRole.MANAGER)) {
     return
   }
   const folderId = req.query.id as string
@@ -66,6 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(500).json({ error })
   }
 }
+export default withIronSessionApiRoute(handler, sessionOptions)
 
 // loads the tree of folders and files from Google Drive making many api calls
 const loadAndBuildTree = async (auth: any, folderId: string, res: NextApiResponse) => {

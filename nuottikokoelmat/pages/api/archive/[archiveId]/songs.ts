@@ -7,79 +7,81 @@ import { withIronSessionApiRoute } from 'iron-session/next'
 import { Types } from 'mongoose'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { hasApi, secureFetch } from '../../config'
+import { isArchiveVisitor } from '../../auth'
 
-async function handler (req: NextApiRequest, res: NextApiResponse): Promise<void> {
-	const archiveId = req.query.archiveId as string
-	if (!archiveId) {
-		res.status(400).json({ error: 'archiveId missing' })
-		return
-	}
-	if (req.session?.archiveVisitor?.archiveId !== archiveId) {
-		res.status(401).json({ error: 'not logged in' })
-		return
-	}
+async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
+  const archiveId = req.query.archiveId as string
+  if (!isArchiveVisitor(req, res)) {
+    return
+  }
 
-	try {
-		if (hasApi('/api/archive/:archiveId/songs')) {
-			await apiHandler(req, res, archiveId)
-		} else {
-			await mongoHandler(req, res, archiveId)
-		}
-	} catch (error) {
-		console.log(error)
-		res.status(500).json({ error })
-	}
+  try {
+    if (hasApi('/api/archive/:archiveId/songs')) {
+      await apiHandler(req, res, archiveId)
+    } else {
+      await mongoHandler(req, res, archiveId)
+    }
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error })
+  }
 }
 
 const apiHandler = async (req: NextApiRequest, res: NextApiResponse, archiveId: string): Promise<void> => {
-	if (req.method === 'GET') {
-		const response = await secureFetch(`/api/v1/archive/${archiveId}/songs`)
-		const json = await response.json()
-		res.status(response.status).json(json)
-	} else if (req.method === 'PATCH') {
-		if (req.session?.archiveUser?.role !== 'manager') {
-			res.status(401).json({ error: 'not authorized' })
-			return
-		}
+  if (req.method === 'GET') {
+    const response = await secureFetch(`/api/v1/archive/${archiveId}/songs`)
+    const json = await response.json()
+    res.status(response.status).json(json)
+  } else if (req.method === 'PATCH') {
+    if (req.session?.archiveUser?.role !== 'manager') {
+      res.status(401).json({ error: 'not authorized' })
+      return
+    }
 
-		const response = await secureFetch(`/api/v1/archive/${archiveId}/songs`, {
-			method: 'PATCH',
-			body: JSON.stringify(req.body),
-			headers: { 'Content-Type': 'application/json' },
-		})
-		const json = await response.json()
-		res.status(response.status).json(json)
-	} else {
-		res.status(500).json({ error: 'method not supported' })
-	}
+    const response = await secureFetch(`/api/v1/archive/${archiveId}/songs`, {
+      method: 'PATCH',
+      body: JSON.stringify(req.body),
+      headers: { 'Content-Type': 'application/json' },
+    })
+    const json = await response.json()
+    res.status(response.status).json(json)
+  } else {
+    res.status(500).json({ error: 'method not supported' })
+  }
 }
 
 const mongoHandler = async (req: NextApiRequest, res: NextApiResponse, archiveId: string): Promise<void> => {
-	await dbConnect()
-	if (req.method === 'GET') {
-		console.debug('GET archive', archiveId)
-		const songs = (await SongModel.find({ archiveId }).exec()).sort(buildSongCompare(defaultSortSettings))
-		res.status(200).json([...songs])
-	} else if (req.method === 'PATCH') {
-		if (req.session?.archiveUser?.role !== 'manager') {
-			res.status(401).json({ error: 'not authorized' })
-			return
-		}
+  await dbConnect()
+  if (req.method === 'GET') {
+    console.debug('GET archive', archiveId)
+    const songs = (await SongModel.find({ archiveId }).exec()).sort(buildSongCompare(defaultSortSettings))
+    res.status(200).json([...songs])
+  } else if (req.method === 'PATCH') {
+    if (req.session?.archiveUser?.role !== 'manager') {
+      res.status(401).json({ error: 'not authorized' })
+      return
+    }
 
-		const body = req.body as { hideSongIds: string[]; showSongIds: string[] }
-		const { hideSongIds, showSongIds } = body
-		const hidden = await SongModel.updateMany({ _id: { $in: hideSongIds.map((id) => new Types.ObjectId(id)) } }, {
-			hide: true,
-			hideDate: new Date(),
-		})
-		const shown = await SongModel.updateMany({ _id: { $in: showSongIds.map((id) => new Types.ObjectId(id)) } }, {
-			hide: false,
-			hideDate: undefined,
-		})
-		return res.status(200).json({ hidden, shown })
-	} else {
-		res.status(500).json({ error: 'method not supported' })
-	}
+    const body = req.body as { hideSongIds: string[]; showSongIds: string[] }
+    const { hideSongIds, showSongIds } = body
+    const hidden = await SongModel.updateMany(
+      { _id: { $in: hideSongIds.map((id) => new Types.ObjectId(id)) } },
+      {
+        hide: true,
+        hideDate: new Date(),
+      }
+    )
+    const shown = await SongModel.updateMany(
+      { _id: { $in: showSongIds.map((id) => new Types.ObjectId(id)) } },
+      {
+        hide: false,
+        hideDate: undefined,
+      }
+    )
+    return res.status(200).json({ hidden, shown })
+  } else {
+    res.status(500).json({ error: 'method not supported' })
+  }
 }
 
 export default withIronSessionApiRoute(handler, sessionOptions)

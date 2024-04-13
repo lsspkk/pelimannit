@@ -1,23 +1,22 @@
-import { ArchiveRole, hasRole } from '@/models/archiveUser'
+import { ArchiveRole } from '@/models/archiveUser'
 import { sessionOptions } from '@/models/session'
+import { isArchiveVisitor } from '@/pages/api/auth'
 import bcrypt from 'bcrypt'
-import { get } from 'http'
 import { withIronSessionApiRoute } from 'iron-session/next'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 async function startManageRoute(req: NextApiRequest, res: NextApiResponse) {
+  if (!isArchiveVisitor(req, res)) {
+    return
+  }
   const archiveId = req.query.archiveId as string
-  if (!archiveId) {
-    res.status(400).json({ error: 'archiveId missing' })
-    return
-  }
-  if (req.session?.archiveVisitor?.archiveId !== archiveId) {
-    res.status(401).json({ error: 'not logged in' })
-    return
-  }
-
   const { username, password, role } = await req.body
   //console.debug('startManageRoute', { username, password })
+
+  if (role !== ArchiveRole.MANAGER && role !== ArchiveRole.USER) {
+    res.status(400).json({ message: 'Invalid role' })
+    return
+  }
 
   try {
     const passwordHash = getPasswordHash(archiveId, role)

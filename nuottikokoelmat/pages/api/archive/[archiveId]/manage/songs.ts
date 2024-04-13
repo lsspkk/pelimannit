@@ -1,16 +1,13 @@
+import { ArchiveRole } from '@/models/archiveUser'
 import { dbConnect } from '@/models/dbConnect'
+import { sessionOptions } from '@/models/session'
 import { Song, SongModel } from '@/models/song'
+import { hasArchiveAuth } from '@/pages/api/auth'
+import { withIronSessionApiRoute } from 'iron-session/next'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
-  const archiveId = req.query.archiveId as string
-  if (!archiveId) {
-    res.status(400).json({ error: 'archiveId missing' })
-    return
-  }
-
-  if ((!req.session?.archiveUser || req.session?.archiveUser.archiveId !== archiveId) && !process.env.CREATE_PASSWORD) {
-    res.status(401).json({ error: 'not authorized' })
+async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
+  if (!hasArchiveAuth(req, res, ArchiveRole.MANAGER)) {
     return
   }
 
@@ -31,3 +28,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(500).json({ error })
   }
 }
+
+export default withIronSessionApiRoute(handler, sessionOptions)

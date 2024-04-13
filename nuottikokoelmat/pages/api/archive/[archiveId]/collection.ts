@@ -5,22 +5,17 @@ import mongoose from 'mongoose'
 import { withIronSessionApiRoute } from 'iron-session/next'
 import { sessionOptions } from '@/models/session'
 import { hasApi, secureFetch } from '@/pages/api/config'
+import { hasArchiveAuth, isArchiveVisitor } from '../../auth'
+import { ArchiveRole } from '@/models/archiveUser'
 
 async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
+  if (!isArchiveVisitor(req, res)) {
+    return
+  }
+  if (req.method === 'POST' && !hasArchiveAuth(req, res, ArchiveRole.USER)) {
+    return
+  }
   const archiveId = req.query.archiveId as string
-  if (!archiveId) {
-    res.status(400).json({ error: 'archiveId missing' })
-    return
-  }
-  if (req.session?.archiveVisitor?.archiveId !== archiveId) {
-    res.status(401).json({ error: 'not logged in' })
-    return
-  }
-  if (req.method === 'POST' && req.session.archiveUser?.archiveId !== archiveId) {
-    res.status(401).json({ error: 'Unauthorized' })
-    return
-  }
-
   try {
     if (hasApi('/api/archive/:archiveId/collection')) {
       await apiHandler(req, res, archiveId)
