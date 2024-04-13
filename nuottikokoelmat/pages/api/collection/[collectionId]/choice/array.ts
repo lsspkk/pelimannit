@@ -1,11 +1,11 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { dbConnect } from '../../../../../models/dbConnect'
-import { ChoiceModel } from '../../../../../models/choice'
-import { Types } from 'mongoose'
+import { ChoiceModel } from '@/models/choice'
+import { dbConnect } from '@/models/dbConnect'
 import { sessionOptions } from '@/models/session'
-import { withIronSessionApiRoute } from 'iron-session/next'
-import { isAuthorized } from '@/pages/api/choice'
+import { isAuthorized } from '@/pages/api/auth'
 import { hasApi, secureFetch } from '@/pages/api/config'
+import { withIronSessionApiRoute } from 'iron-session/next'
+import { Types } from 'mongoose'
+import type { NextApiRequest, NextApiResponse } from 'next'
 
 async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   try {

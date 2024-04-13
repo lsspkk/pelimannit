@@ -7,7 +7,8 @@ https://fullstackopen.com/osa3/tietojen_tallettaminen_mongo_db_tietokantaan#mong
 
 Google Drive API:n quotan kannalta uusien tiedostojen hallintaa varten
 kannattaa tallentaa yksi api-vastaus tiedostoon. katso
-api/drive/folder/[id].ts
+pages/test/drive/folder/page.tsx
+pages/api/archive/[archiveId]/manage/drive/folder/[id].ts
 
 # Ylläpitoa
 

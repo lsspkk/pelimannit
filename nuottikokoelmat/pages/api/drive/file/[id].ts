@@ -1,8 +1,8 @@
 // backend for testing google drive api
 
-import type { NextApiRequest, NextApiResponse } from 'next'
+import { driveAuth } from '@/pages/api/auth'
 import { google } from 'googleapis'
-import { getAuth } from '../getAuth'
+import type { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const fileId = req.query.id as string
@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return
       }
 
-      const auth = await getAuth()
+      const auth = await driveAuth()
 
       if (!auth) {
         res.status(500).json({ error: 'no client' })
