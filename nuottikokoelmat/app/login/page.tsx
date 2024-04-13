@@ -36,7 +36,7 @@ export default function Home() {
   const archive = data?.find((a) => a._id === archiveId)
 
   return (
-    <NpMain title="Kirjaudu">
+    <NpMain title='Kirjaudu'>
       <form onSubmit={onLogin}>
         <div className='flex flex-col gap-4 w-full'>
           {!archive && <NpTitle>Pääsy evätty</NpTitle>}
@@ -48,7 +48,7 @@ export default function Home() {
           )}
           <div>Kirjaudu vierailijaksi nuottiarkistoon, jotta voit käyttää sitä.</div>
 
-          <input type="text" value={archive?.archivename || ''} hidden readOnly name="username" />
+          <input type='text' value={archive?.archivename || ''} hidden readOnly name='username' />
 
           <NpInput
             autoFocus
@@ -63,7 +63,9 @@ export default function Home() {
             <NpButton variant='secondary' onClick={() => router.push('/')}>
               Etusivulle
             </NpButton>
-            <NpButton onClick={onLogin}>Kirjaudu</NpButton>
+            <NpButton type='submit' onClick={onLogin}>
+              Kirjaudu
+            </NpButton>
           </div>
         </div>
       </form>
