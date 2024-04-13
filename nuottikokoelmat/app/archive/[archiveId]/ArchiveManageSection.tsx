@@ -36,16 +36,16 @@ export const ArchiveManageSection = (
 		<div className='flex flex-col gap-4 w-full pt-2 md:pt-4'>
 			<NpSubTitle>Ylläpito</NpSubTitle>
 
-			<div className='flex flex-row gap4 justify-start w-full'>
-				<NpButton className='w-28 self-end' onClick={onStop}>Lopeta ylläpito</NpButton>
-				{hasRole(archiveUser, ArchiveRole.MANAGER) && (
-					<div className='flex flex-col gap-2 w-full mb-12'>
-						<div className='flex justify-start'>
-							<NpButton onClick={() => router.push(`/archive/${archiveId}/songs/manage`)}>Kappaleiden hallinta</NpButton>
-						</div>
-					</div>
-				)}
+			<div className='flex flex-row gap4 justify-end w-full'>
+				<NpButton className='self-end' onClick={onStop}>Lopeta ylläpito</NpButton>
 			</div>
+			{hasRole(archiveUser, ArchiveRole.MANAGER) && (
+				<div className='flex flex-col gap-2 w-full mb-12'>
+					<div className='flex justify-end'>
+						<NpButton onClick={() => router.push(`/archive/${archiveId}/songs/manage`)}>Kappaleiden hallinta</NpButton>
+					</div>
+				</div>
+			)}
 
 			{isLoading && <div>Ladataan...</div>}
 			{archive && (

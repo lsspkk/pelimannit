@@ -4,6 +4,7 @@ import { NpBackButton } from '@/components/NpBackButton'
 import { NpButton } from '@/components/NpButton'
 import { NpMain } from '@/components/NpMain'
 import { NpToast } from '@/components/NpToast'
+import useDevice from '@/components/useDevice'
 import { ArchiveRole } from '@/models/archiveUser'
 import { useArchive, useArchiveUser } from '@/models/swrApi'
 import { useRouter } from 'next/navigation'
@@ -24,6 +25,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 	const [section, setSection] = React.useState<ManagingSection>('NONE')
 	const { data: archiveUser, mutate: mutateArchiveUser } = useArchiveUser(archiveId)
 	const [showToast, setShowToast] = React.useState(true)
+	const device = useDevice()
 
 	const onStop = async () => {
 		const response = await fetch(`/api/archive/${archiveId}/manage/stop`)
@@ -61,7 +63,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 						</div>
 						<div className='flex gap-4 md:gap-8 w-full'>
 							{section === 'NONE' && <NpButton onClick={() => router.push(`/archive/${data._id}/songs`)}>Kappaleet</NpButton>}
-							{section === 'NONE' && (
+							{section === 'NONE' && device === 'desktop' && (
 								<NpButton
 									variant='secondary'
 									className='w-28'

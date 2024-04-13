@@ -85,6 +85,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
                   Lataamalla ajantasainen tiedostolista ja näe mahdolliset uudet tiedostot. Lisää tiedostot arkistoon
                   joko kappalelistauksessa näkyvänä tai piilotettuna.
                 </p>
+                <p className='text-sm'>Listan lataus kestää tyypillisesti joitain sekunteja</p>
 
                 <NpInput
                   label='Google Drive -kansion ID'
