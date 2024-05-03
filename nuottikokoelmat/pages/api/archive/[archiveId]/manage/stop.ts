@@ -1,19 +1,19 @@
-import { withIronSessionApiRoute } from 'iron-session/next'
-import { sessionOptions } from '@/models/session'
+import { getSession } from '@/pages/api/auth'
 import { NextApiRequest, NextApiResponse } from 'next'
 
-async function logoutRoute(req: NextApiRequest, res: NextApiResponse) {
-  const archiveId = req.session.archiveUser?.archiveId
-  if (!archiveId) {
-    req.session.destroy()
-    res.status(200).json({ message: 'logged out' })
-    return
-  }
+async function handler (req: NextApiRequest, res: NextApiResponse) {
+	const session = await getSession(req, res)
+	const archiveId = session.archiveUser?.archiveId
+	if (!archiveId) {
+		session.destroy()
+		res.status(200).json({ message: 'logged out' })
+		return
+	}
 
-  req.session.archiveVisitor = { archiveId }
-  delete req.session.archiveUser
-  await req.session.save()
-  res.status(200).json({ message: 'logged out, now a visitor' })
+	session.archiveVisitor = { archiveId }
+	delete session.archiveUser
+	await session.save()
+	res.status(200).json({ message: 'logged out, now a visitor' })
 }
 
-export default withIronSessionApiRoute(logoutRoute, sessionOptions)
+export default handler

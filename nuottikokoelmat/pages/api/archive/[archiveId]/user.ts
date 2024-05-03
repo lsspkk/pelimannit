@@ -1,14 +1,14 @@
 import { ArchiveUser } from '@/models/archiveUser'
-import { sessionOptions } from '@/models/session'
-import { withIronSessionApiRoute } from 'iron-session/next'
 import { NextApiRequest, NextApiResponse } from 'next'
+import { getSession } from '../../auth'
 
-async function userRoute (req: NextApiRequest, res: NextApiResponse<ArchiveUser>) {
-	if (req.session.archiveUser) {
-		res.json(req.session.archiveUser)
+async function handler (req: NextApiRequest, res: NextApiResponse<ArchiveUser>) {
+	const session = await getSession(req, res)
+	if (session.archiveUser) {
+		res.json(session.archiveUser)
 	} else {
 		res.json({ username: '', archiveId: '', role: '' })
 	}
 }
 
-export default withIronSessionApiRoute(userRoute, sessionOptions)
+export default handler

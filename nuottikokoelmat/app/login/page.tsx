@@ -4,71 +4,72 @@ import { NpButton } from '@/components/NpButton'
 import { NpInput } from '@/components/NpInput'
 import { NpMain } from '@/components/NpMain'
 import { NpTitle } from '@/components/NpTitle'
-import { useArchive, useArchives } from '@/models/swrApi'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { Input } from 'postcss'
-import React from 'react'
+import { useArchives } from '@/models/swrApi'
+import { useRouter, useSearchParams } from 'next/navigation'
+import React, { Suspense } from 'react'
 
 export default function Home() {
-  const router = useRouter()
-  const [visitorPassword, setVisitorPassword] = React.useState('')
-  const { data } = useArchives()
-  const [error, setError] = React.useState('')
-  const pathname = useSearchParams()?.get('pathname') || '//'
-  const archiveId = decodeURIComponent(pathname).split('/')[2]
+	return (
+		<NpMain title='Kirjaudu'>
+			<Suspense fallback={<div>Ladataan...</div>}>
+				<LoginForm />
+			</Suspense>
+		</NpMain>
+	)
+}
 
-  const onLogin = async (e?: React.FormEvent) => {
-    e?.preventDefault()
-    const res = await fetch(`/api/archive/${archiveId}/visitor/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ visitorPassword }),
-    })
-    if (res.ok) {
-      router.push(pathname)
-    } else {
-      setError('Väärä salasana')
-    }
-  }
+const LoginForm = () => {
+	const router = useRouter()
+	const [visitorPassword, setVisitorPassword] = React.useState('')
+	const { data } = useArchives()
+	const [error, setError] = React.useState('')
+	const pathname = useSearchParams()?.get('pathname') || '//'
+	const archiveId = decodeURIComponent(pathname).split('/')[2]
 
-  const archive = data?.find((a) => a._id === archiveId)
+	const onLogin = async (e?: React.FormEvent) => {
+		e?.preventDefault()
+		const res = await fetch(`/api/archive/${archiveId}/visitor/login`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ visitorPassword }),
+		})
+		if (res.ok) {
+			router.push(pathname)
+		} else {
+			setError('Väärä salasana')
+		}
+	}
 
-  return (
-    <NpMain title='Kirjaudu'>
-      <form onSubmit={onLogin}>
-        <div className='flex flex-col gap-4 w-full'>
-          {!archive && <NpTitle>Pääsy evätty</NpTitle>}
-          {archive && (
-            <React.Fragment>
-              <NpTitle>{archive.archivename}</NpTitle>
-              <div>Pääsy evätty</div>
-            </React.Fragment>
-          )}
-          <div>Kirjaudu vierailijaksi nuottiarkistoon, jotta voit käyttää sitä.</div>
+	const archive = data?.find((a) => a._id === archiveId)
 
-          <input type='text' value={archive?.archivename || ''} hidden readOnly name='username' />
+	return (
+		<form onSubmit={onLogin}>
+			<div className='flex flex-col gap-4 w-full'>
+				{!archive && <NpTitle>Pääsy evätty</NpTitle>}
+				{archive && (
+					<React.Fragment>
+						<NpTitle>{archive.archivename}</NpTitle>
+						<div>Pääsy evätty</div>
+					</React.Fragment>
+				)}
+				<div>Kirjaudu vierailijaksi nuottiarkistoon, jotta voit käyttää sitä.</div>
 
-          <NpInput
-            autoFocus
-            label='Vierailijan salasana'
-            value={visitorPassword}
-            type='password'
-            onChange={(e) => setVisitorPassword(e.target.value)}
-          />
+				<input type='text' value={archive?.archivename || ''} hidden readOnly name='username' />
 
-          <div className='text-red-500'>{error}</div>
-          <div className='flex gap-4 justify-between'>
-            <NpButton variant='secondary' onClick={() => router.push('/')}>
-              Etusivulle
-            </NpButton>
-            <NpButton type='submit' onClick={onLogin}>
-              Kirjaudu
-            </NpButton>
-          </div>
-        </div>
-      </form>
-    </NpMain>
-  )
+				<NpInput
+					autoFocus
+					label='Vierailijan salasana'
+					value={visitorPassword}
+					type='password'
+					onChange={(e) => setVisitorPassword(e.target.value)}
+				/>
+
+				<div className='text-red-500'>{error}</div>
+				<div className='flex gap-4 justify-between'>
+					<NpButton variant='secondary' onClick={() => router.push('/')}>Etusivulle</NpButton>
+					<NpButton type='submit' onClick={onLogin}>Kirjaudu</NpButton>
+				</div>
+			</div>
+		</form>
+	)
 }
