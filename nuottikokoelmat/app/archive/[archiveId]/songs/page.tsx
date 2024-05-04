@@ -49,7 +49,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 			{loadPdfError && <NpToast onClose={() => setLoadPdfError(null)}>{loadPdfError}</NpToast>}
 			{songs && !pdfDialogParams && !showIframe && (
 				<div className='flex flex-col gap-4 w-full items-start'>
-					<NpBackButton onClick={() => router.push(`/archive/${params.archiveId}`)} />
+					<NpBackButton onClick={() => router.back()} />
 
 					<SongList songs={songs} onLoadPdf={onLoadPdf} archiveId={params.archiveId} />
 				</div>

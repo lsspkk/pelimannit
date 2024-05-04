@@ -97,6 +97,21 @@ https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirector
 -- ei firefox for androidissa, mutta on androidin chromessa.
 olis riittävän hyvä
 
+# cold start
+
+https://vercel.com/guides/how-can-i-improve-serverless-function-lambda-cold-start-performance-on-vercel
+https://nextjs.org/docs/app/building-your-application/optimizing/bundle-analyzer
+
+pdf.js ja react-pdf-viewer on 30% bundle koosta
+
+Kannattais harkita 5 min cron-ajastusta iltapäivästä iltaan ja viikonloppuisin.
+
+## caching
+
+https://vercel.com/docs/edge-network/caching
+
+Kaikki arkiston nuottilistauksia palauttavat kutsut on mahdollista cachettaa.
+
 ## Getting Started
 
 First, run the development server:
