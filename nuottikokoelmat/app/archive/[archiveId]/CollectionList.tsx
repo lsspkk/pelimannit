@@ -29,7 +29,7 @@ export const CollectionList = ({ archiveId }: { archiveId: string }) => {
 			{showAddCollection && <AddCollection archiveId={archiveId} onClose={() => setShowAddCollection(false)} />}
 
 			{!isLoading && data?.length === 0 && <div>Ei kokoelmia</div>}
-			{isLoading && <LoadingIndicator />}
+			{isLoading && <LoadingIndicator variant='secondary' />}
 			{error && showToast && <NpToast onClose={() => setShowToast(false)}>{JSON.stringify(error)}</NpToast>}
 			{data && (
 				<div className='flex flex-col gap-4'>
