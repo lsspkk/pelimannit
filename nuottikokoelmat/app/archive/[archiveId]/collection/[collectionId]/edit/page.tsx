@@ -1,10 +1,10 @@
 'use client'
+import { LoadingIndicator } from '@/components/LoadingIndicator'
 import { NpBackButton } from '@/components/NpBackButton'
 import { NpButton } from '@/components/NpButton'
 import { NpInput } from '@/components/NpInput'
 import { NpMain } from '@/components/NpMain'
 import { NpTextArea } from '@/components/NpTextarea'
-import { NpSubTitle } from '@/components/NpTitle'
 import { NpToast } from '@/components/NpToast'
 import { Collection } from '@/models/collection'
 import { useCollection } from '@/models/swrApi'
@@ -55,7 +55,7 @@ export default function Home({ params: { collectionId, archiveId } }: { params: 
 	return (
 		<NpMain title='Kokoelman muokkaus'>
 			<NpBackButton onClick={() => router.back()} />
-			{isLoading && <div>Ladataan...</div>}
+			{isLoading && <LoadingIndicator />}
 			{error && showToast && <NpToast onClose={() => setShowToast(false)}>{JSON.stringify(error)}</NpToast>}
 			{data && (
 				<div className='flex flex-col gap-4 items-start'>

@@ -1,7 +1,9 @@
 'use client'
 
+import { LoadingIndicator } from '@/components/LoadingIndicator'
 import { NpBackButton } from '@/components/NpBackButton'
 import { NpButton } from '@/components/NpButton'
+import { NpCloseButton } from '@/components/NpCloseButton'
 import { NpDialog } from '@/components/NpDialog'
 import { NpInput } from '@/components/NpInput'
 import { NpMain } from '@/components/NpMain'
@@ -44,14 +46,14 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 
 	return (
 		<NpMain title='Arkiston kappaleet'>
-			{isLoading && <div>Ladataan...</div>}
+			{isLoading && <LoadingIndicator />}
 			{error && showToast && <NpToast onClose={() => setShowToast(false)}>{JSON.stringify(error)}</NpToast>}
 			{loadPdfError && <NpToast onClose={() => setLoadPdfError(null)}>{loadPdfError}</NpToast>}
 			{songs && !pdfDialogParams && !showIframe && (
 				<div className='flex flex-col gap-4 w-full items-start'>
 					<NpBackButton onClick={() => router.back()} />
 
-					<SongList songs={songs} onLoadPdf={onLoadPdf} archiveId={params.archiveId} />
+					{!isLoading && <SongList songs={songs} onLoadPdf={onLoadPdf} archiveId={params.archiveId} />}
 				</div>
 			)}
 			{pdfDialogParams && (
@@ -144,19 +146,6 @@ const SortSettingsIcon = () => (
 	</svg>
 )
 
-const CloseButton = ({ onClick }: { onClick: () => void }) => (
-	<svg
-		xmlns='http://www.w3.org/2000/svg'
-		className='h-6 w-6 hover:text-gray-700 text-gray-400 cursor-pointer'
-		fill='none'
-		viewBox='0 0 24 24'
-		stroke='currentColor'
-		onClick={onClick}
-	>
-		<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
-	</svg>
-)
-
 const SortSettingsDialog = (
 	{ onClose, sortSettings, setSortSettings }: {
 		onClose: () => void
@@ -177,7 +166,7 @@ const SortSettingsDialog = (
 		<NpDialog onClose={onClose}>
 			<div className='flex w-full justify-end'>
 				<div className='-mt-2 mb-2 -mr-2'>
-					<CloseButton onClick={onClose} />
+					<NpCloseButton onClick={onClose} />
 				</div>
 			</div>
 			<div className='flex gap-4 content-evenly'>

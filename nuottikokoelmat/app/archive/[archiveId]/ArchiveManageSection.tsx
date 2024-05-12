@@ -1,4 +1,5 @@
 'use client'
+import { LoadingIndicator } from '@/components/LoadingIndicator'
 import { NpButton } from '@/components/NpButton'
 import { NpInput } from '@/components/NpInput'
 import { NpSubTitle } from '@/components/NpTitle'
@@ -44,7 +45,7 @@ export const ArchiveManageSection = ({ archiveId, onStop }: { archiveId: string;
 				</div>
 			)}
 
-			{isLoading && <div>Ladataan...</div>}
+			{isLoading && <LoadingIndicator />}
 			{archive && (
 				<div className='flex flex-col gap-4 w-full pt-2 md:pt-8 justify-end self-end'>
 					<NpSubTitle>Vierailijoiden salasana</NpSubTitle>

@@ -8,6 +8,7 @@ import { Archive } from '@/models/archive'
 import { useArchives } from '@/models/swrApi'
 import { useRouter } from 'next/navigation'
 import React from 'react'
+import { LoadingIndicator } from '../components/LoadingIndicator'
 import { NpButtonCard } from '../components/NpButtonCard'
 import { NpDialog } from '../components/NpDialog'
 import { NpMain } from '../components/NpMain'
@@ -18,7 +19,7 @@ export default function Home() {
 
 	return (
 		<NpMain title='Nuottiarkistot'>
-			{isLoading && <div>Ladataan...</div>}
+			{isLoading && <LoadingIndicator />}
 			{error && showToast && <NpToast onClose={() => setShowToast(false)}>{JSON.stringify(error)}</NpToast>}
 			{data && <div className='flex flex-col gap-4 w-full'>{data.map((d) => <ArchiveCard key={d._id} archive={d} />)}</div>}
 		</NpMain>
@@ -33,11 +34,17 @@ const CreationDate = ({ date }: { date: Date }) => {
 const ArchiveCard = ({ archive }: { archive: Archive }) => {
 	const router = useRouter()
 	const [showLogin, setShowLogin] = React.useState(false)
+	const [loginInProgress, setLoginInProgress] = React.useState(false)
 	const [visitorPassword, setVisitorPassword] = React.useState('')
 	const [error, setError] = React.useState(' ')
 
 	const onLogin = async (e?: React.FormEvent) => {
 		e?.preventDefault()
+		if (loginInProgress) {
+			return
+		}
+		setLoginInProgress(true)
+
 		const response = await fetch(`/api/archive/${archive._id}/visitor/login`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -49,6 +56,7 @@ const ArchiveCard = ({ archive }: { archive: Archive }) => {
 			setError('Väärä salasana')
 			setTimeout(() => setError(' '), 3000)
 		}
+		setLoginInProgress(false)
 	}
 
 	return (
@@ -69,10 +77,12 @@ const ArchiveCard = ({ archive }: { archive: Archive }) => {
 								onChange={(e) => setVisitorPassword(e.target.value)}
 								type='password'
 							/>
+
+							{loginInProgress && <div className='opacity-30 text-sm -mb-4 w-full text-center'>Kirjaudutaan...</div>}
 							{<div className='text-red-900 text-sm min-h-4'>{error}</div>}
 							<div className='flex gap-2 mt-2 justify-between w-full'>
 								<NpButton variant='secondary' onClick={() => setShowLogin(false)}>Keskeytä</NpButton>
-								<NpButton type='submit' onClick={onLogin}>Kirjaudu</NpButton>
+								<NpButton inProgress={loginInProgress} type='submit' onClick={onLogin}>Kirjaudu</NpButton>
 							</div>
 						</div>
 					</form>
