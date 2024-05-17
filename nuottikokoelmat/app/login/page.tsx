@@ -1,5 +1,6 @@
 'use client'
 
+import { LoadingIndicator } from '@/components/LoadingIndicator'
 import { NpButton } from '@/components/NpButton'
 import { NpInput } from '@/components/NpInput'
 import { NpMain } from '@/components/NpMain'
@@ -11,7 +12,7 @@ import React, { Suspense } from 'react'
 export default function Home() {
 	return (
 		<NpMain title='Kirjaudu'>
-			<Suspense fallback={<div>Ladataan...</div>}>
+			<Suspense fallback={<LoadingIndicator />}>
 				<LoginForm />
 			</Suspense>
 		</NpMain>

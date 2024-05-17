@@ -1,5 +1,6 @@
 'use client'
 
+import { LoadingIndicator } from '@/components/LoadingIndicator'
 import { NpBackButton } from '@/components/NpBackButton'
 import { NpButtonCard } from '@/components/NpButtonCard'
 import { NpIconButton } from '@/components/NpIconButton'
@@ -41,7 +42,7 @@ export default function Home({ params: { archiveId, collectionId } }: { params: 
 	}
 	return (
 		<NpMain title='Kappalevalinnat'>
-			{isLoading && <div>Ladataan...</div>}
+			{isLoading && <LoadingIndicator />}
 			{cError && <div>Virhe kokoelman kappaleiden lataamisessa: {JSON.stringify(cError)}</div>}
 			{aError && <div>Virhe arkiston kappaleiden lataamisessa: {JSON.stringify(aError)}</div>}
 

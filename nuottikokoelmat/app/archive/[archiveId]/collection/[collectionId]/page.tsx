@@ -1,6 +1,7 @@
 'use client'
 
 import { PencilIcon } from '@/components/icons/PencilIcon'
+import { LoadingIndicator } from '@/components/LoadingIndicator'
 import { NpBackButton } from '@/components/NpBackButton'
 import { NpButton } from '@/components/NpButton'
 import { NpMain } from '@/components/NpMain'
@@ -40,7 +41,7 @@ export default function Home({ params: { archiveId, collectionId } }: { params: 
 
 	return (
 		<NpMain title='Kokoelma'>
-			{isLoading && <div>Ladataan...</div>}
+			{isLoading && <LoadingIndicator />}
 			{error && showToast && <NpToast onClose={() => setShowToast(false)}>{JSON.stringify(error)}</NpToast>}
 			{collection && (
 				<div className='flex flex-col gap-4 w-full items-start -mt-4'>
