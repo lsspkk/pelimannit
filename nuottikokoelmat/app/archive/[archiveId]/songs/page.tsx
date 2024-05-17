@@ -1,5 +1,7 @@
 'use client'
 
+import { SortSettingsIcon } from '@/components/icons//SortSettingsIcon'
+import { CloseButtonIcon } from '@/components/icons/CloseButtonIcon'
 import { NpBackButton } from '@/components/NpBackButton'
 import { NpButton } from '@/components/NpButton'
 import { NpDialog } from '@/components/NpDialog'
@@ -129,34 +131,6 @@ const SongList = ({ songs, onLoadPdf, archiveId }: { songs: Song[]; onLoadPdf: (
 	)
 }
 
-const SortSettingsIcon = () => (
-	<svg
-		xmlns='http://www.w3.org/2000/svg'
-		className='h-6 w-6 text-gray-100'
-		fill='none'
-		viewBox='0 0 262 170'
-		stroke='currentColor'
-		strokeLinecap='round'
-		strokeLinejoin='round'
-	>
-		<path d='M109 2H261.5M109 58.0083H226.927M109 112.5H205.538M109 171H173.166' stroke='black' strokeWidth='12' />
-		<path d='M41.2617 2V171M41.2617 171L77 129.537M41.2617 171L2 129.537' stroke='black' strokeWidth='10' />
-	</svg>
-)
-
-const CloseButton = ({ onClick }: { onClick: () => void }) => (
-	<svg
-		xmlns='http://www.w3.org/2000/svg'
-		className='h-6 w-6 hover:text-gray-700 text-gray-400 cursor-pointer'
-		fill='none'
-		viewBox='0 0 24 24'
-		stroke='currentColor'
-		onClick={onClick}
-	>
-		<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
-	</svg>
-)
-
 const SortSettingsDialog = (
 	{ onClose, sortSettings, setSortSettings }: {
 		onClose: () => void
@@ -177,7 +151,7 @@ const SortSettingsDialog = (
 		<NpDialog onClose={onClose}>
 			<div className='flex w-full justify-end'>
 				<div className='-mt-2 mb-2 -mr-2'>
-					<CloseButton onClick={onClose} />
+					<CloseButtonIcon onClick={onClose} />
 				</div>
 			</div>
 			<div className='flex gap-4 content-evenly'>
