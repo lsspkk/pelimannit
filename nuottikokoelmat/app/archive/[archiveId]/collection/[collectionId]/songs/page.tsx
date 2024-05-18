@@ -65,7 +65,7 @@ export default function Home({ params: { archiveId, collectionId } }: { params: 
 	)
 }
 
-function displayPath (song: Song): String {
+function displayPath (song: Song): string {
 	if (!song.path || song.path.length === 0) {
 		return ''
 	}

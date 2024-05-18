@@ -1,76 +1,64 @@
 'use client'
-import React from 'react'
 import { NpButton } from '@/components/NpButton'
 import { Song } from '@/models/song'
-import { IconPrevious, IconNext } from './PdfDialog'
+import React from 'react'
+import { IconNext } from './icons/IconNext'
+import { IconPrevious } from './icons/IconPrevious'
 import { useSwipe } from './useSwipe'
 
-export const PdfSongNavigation = ({
-  songs,
-  index,
-  onLoadPdf,
-}: {
-  songs: Song[]
-  index: number
-  onLoadPdf: (index: number) => void
-}) => {
-  const [inProgress, setInProgress] = React.useState<'NEXT' | 'PREVIOUS' | 'NONE'>('NONE')
-  const song = songs[index]
-  const hasNext = songs && index < songs.length - 1
-  const hasPrevious = songs && index > 0
+export const PdfSongNavigation = ({ songs, index, onLoadPdf }: { songs: Song[]; index: number; onLoadPdf: (index: number) => void }) => {
+	const [inProgress, setInProgress] = React.useState<'NEXT' | 'PREVIOUS' | 'NONE'>('NONE')
+	const song = songs[index]
+	const hasNext = songs && index < songs.length - 1
+	const hasPrevious = songs && index > 0
 
-  const onNext = () => {
-    if (hasNext) {
-      setInProgress('NEXT')
-      onLoadPdf(index + 1)
-      setInProgress('NONE')
-    }
-  }
-  const onPrevious = () => {
-    if (hasPrevious) {
-      setInProgress('PREVIOUS')
-      onLoadPdf(index - 1)
-      setInProgress('NONE')
-    }
-  }
+	const onNext = () => {
+		if (hasNext) {
+			setInProgress('NEXT')
+			onLoadPdf(index + 1)
+			setInProgress('NONE')
+		}
+	}
+	const onPrevious = () => {
+		if (hasPrevious) {
+			setInProgress('PREVIOUS')
+			onLoadPdf(index - 1)
+			setInProgress('NONE')
+		}
+	}
 
-  const onSwipe = useSwipe({ onSwipedLeft: onNext, onSwipedRight: onPrevious })
+	const onSwipe = useSwipe({ onSwipedLeft: onNext, onSwipedRight: onPrevious })
 
-  return (
-    <div
-      {...onSwipe}
-      className='fixed left-0 bottom-0 w-full flex justify-between z-30 items-end bg-blue-800 bg-opacity-60'
-    >
-      <NpButton
-        className='px-[0.2em] rounded-lg opacity-60 border-none py-1 sm:py-0 md:py-1'
-        onClick={onPrevious}
-        disabled={!hasPrevious}
-        inProgress={inProgress === 'PREVIOUS'}
-      >
-        {hasPrevious && <IconPrevious />}
-      </NpButton>
-      {(inProgress === 'NEXT' || inProgress === 'PREVIOUS') && (
-        <div className='w-80 h-80 animate-spin rounded-full bg-green-300 opacity-60' />
-      )}
-      {inProgress === 'NONE' && (
-        <div
-          className='text-xs mx-2 text-white py-1 opacity-40 flex justify-center gap-4 z-50 w-full'
-          onClick={() => {}}
-        >
-          <div>
-            {index + 1}/{songs?.length}
-          </div>
-          <div> {song?.songname}</div>
-        </div>
-      )}
-      <NpButton
-        className='px-[0.2em] rounded-lg opacity-60 border-none py-1 sm:py-0 md:py-1'
-        onClick={onNext}
-        disabled={!hasNext}
-        inProgress={inProgress === 'NEXT'}
-      >
-        {hasNext && <IconNext />}
-      </NpButton>
-    </div>
-  )
+	return (
+		<div {...onSwipe} className='fixed left-0 bottom-0 w-full flex justify-between z-30 items-end bg-blue-800 bg-opacity-60'>
+			<NpButton
+				className='px-[0.2em] rounded-lg opacity-60 border-none py-1 sm:py-0 md:py-1'
+				onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+					e.preventDefault()
+					onPrevious()
+				}}
+				disabled={!hasPrevious}
+				inProgress={inProgress === 'PREVIOUS'}
+			>
+				{hasPrevious && <IconPrevious />}
+			</NpButton>
+			{(inProgress === 'NEXT' || inProgress === 'PREVIOUS') && (
+				<div className='w-80 h-80 animate-spin rounded-full bg-green-300 opacity-60' />
+			)}
+			{inProgress === 'NONE' && (
+				<div className='text-xs mx-2 text-white py-1 opacity-40 flex justify-center gap-4 z-50 w-full' onClick={() => {}}>
+					<div>{index + 1}/{songs?.length}</div>
+					<div>{song?.songname}</div>
+				</div>
+			)}
+			<NpButton
+				className='px-[0.2em] rounded-lg opacity-60 border-none py-1 sm:py-0 md:py-1'
+				onClick={onNext}
+				disabled={!hasNext}
+				inProgress={inProgress === 'NEXT'}
+			>
+				{hasNext && <IconNext />}
+			</NpButton>
+		</div>
+	)
 }

@@ -9,14 +9,14 @@ import { NpDialog } from '@/components/NpDialog'
 import { NpInput } from '@/components/NpInput'
 import { NpMain } from '@/components/NpMain'
 import { NpToast } from '@/components/NpToast'
-import { PdfDialog, PdfDialogParams } from '@/components/PdfDialog'
-import { PdfIframe } from '@/components/PdfIframe'
-import { useFileMapValue } from '@/models/fileContext'
+import { PdfFileView, PdfFileViewParams } from '@/components/PdfFileView'
 import { Song } from '@/models/song'
 import { buildSongCompare, loadSortSettings, saveSortSettings, SortSettings } from '@/models/sortSettings'
 import { useArchiveSongs } from '@/models/swrApi'
+import { useFileMapValue } from '@/stores/fileContext'
+import { useSongView } from '@/stores/SongViewContext'
 import { Types } from 'mongoose'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import React from 'react'
 import { BasicSongCard } from '../collection/[collectionId]/BasicSongCard'
 
@@ -27,44 +27,49 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 	const { data, isLoading, error } = useArchiveSongs(params.archiveId) || {}
 	const [loadPdfError, setLoadPdfError] = React.useState<string | null>(null)
 	const [showToast, setShowToast] = React.useState(true)
+	const pathname = usePathname() ?? ''
 
-	const [pdfDialogParams, setPdfDialogParams] = React.useState<PdfDialogParams | null>(null)
+	const [pdfDialogParams, setPdfDialogParams] = React.useState<PdfFileViewParams | null>(null)
 
 	const fileMap = useFileMapValue()
-	const [iframeIndex, setIframeIndex] = React.useState<number | null>(null)
+	const [, setSongView] = useSongView()
+
 	const songs = data || []
+	const visibleSongs = songs.filter((song) => !song.hide)
 
 	const onLoadPdf = (index: number) => {
 		const song = songs[index]
 		const file = fileMap?.get(song?._id as unknown as Types.ObjectId)
 		if (file) {
 			setPdfDialogParams({ fileUrl: URL.createObjectURL(file), songs, index: songs?.findIndex((s) => s._id === song._id) || 0, song })
-			return
+		} // Song has no file, use iframe viewer
+		else if (!pathname.endsWith('songview')) {
+			router.push('songs/songview')
+			setSongView(() => {
+				return { songs: visibleSongs, index }
+			})
 		}
-		setIframeIndex(index)
 	}
-	const showIframe = iframeIndex !== null
 
 	return (
 		<NpMain title='Arkiston kappaleet'>
 			{isLoading && <LoadingIndicator />}
 			{error && showToast && <NpToast onClose={() => setShowToast(false)}>{JSON.stringify(error)}</NpToast>}
 			{loadPdfError && <NpToast onClose={() => setLoadPdfError(null)}>{loadPdfError}</NpToast>}
-			{songs && !pdfDialogParams && !showIframe && (
+			{songs && !pdfDialogParams && (
 				<div className='flex flex-col gap-4 w-full items-start'>
 					<NpBackButton onClick={() => router.back()} />
 
-					{!isLoading && <SongList songs={songs} onLoadPdf={onLoadPdf} archiveId={params.archiveId} />}
+					{!isLoading && <SongList songs={visibleSongs} onLoadPdf={onLoadPdf} archiveId={params.archiveId} />}
 				</div>
 			)}
 			{pdfDialogParams && (
-				<PdfDialog
+				<PdfFileView
 					pdfDialogParams={pdfDialogParams}
 					onLoadPdf={onLoadPdf}
 					onClose={() => setPdfDialogParams(null)}
 				/>
 			)}
-			{showIframe && <PdfIframe iframeIndex={iframeIndex} setIframeIndex={setIframeIndex} songs={songs} onLoadPdf={onLoadPdf} />}
 		</NpMain>
 	)
 }
@@ -72,7 +77,6 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 const FirstAlphabet = ({ children }: { children: React.ReactNode }) => <div className='text-2xl font-bold text-gray-500'>{children}</div>
 
 const SongList = ({ songs, onLoadPdf, archiveId }: { songs: Song[]; onLoadPdf: (index: number) => void; archiveId: string }) => {
-	const visibleSongs = songs.filter((song) => !song.hide)
 	const [showControls, setShowControls] = React.useState(false)
 	const [sortSettings, setSortSettings] = React.useState<SortSettings>(loadSortSettings(archiveId))
 	const [filteredSongs, setFilteredSongs] = React.useState<Song[]>([])
@@ -80,14 +84,14 @@ const SongList = ({ songs, onLoadPdf, archiveId }: { songs: Song[]; onLoadPdf: (
 	React.useEffect(() => {
 		saveSortSettings(archiveId, sortSettings)
 		if (sortSettings.filter) {
-			const filtered = visibleSongs.filter((song) => song.songname.toLowerCase().includes(sortSettings.filter.toLowerCase()))
+			const filtered = songs.filter((song) => song.songname.toLowerCase().includes(sortSettings.filter.toLowerCase()))
 			filtered.sort(buildSongCompare(sortSettings))
 			setFilteredSongs(filtered)
 		} else {
-			const sorted = visibleSongs.sort(buildSongCompare(sortSettings))
+			const sorted = songs.sort(buildSongCompare(sortSettings))
 			setFilteredSongs(sorted)
 		}
-	}, [sortSettings, archiveId, visibleSongs])
+	}, [sortSettings, archiveId, songs])
 
 	const isFirstAlphabet = (songs: any, index: number) => {
 		const isLetter = songs[index].songname.charAt(0).match(/[a-zåäö]/i)
