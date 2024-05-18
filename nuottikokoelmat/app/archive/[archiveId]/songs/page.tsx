@@ -9,8 +9,7 @@ import { NpDialog } from '@/components/NpDialog'
 import { NpInput } from '@/components/NpInput'
 import { NpMain } from '@/components/NpMain'
 import { NpToast } from '@/components/NpToast'
-import { PdfDialog, PdfDialogParams } from '@/components/PdfDialog'
-import { PdfIframe } from '@/components/PdfIframe'
+import { PdfFileView, PdfFileViewParams } from '@/components/PdfFileView'
 import { Song } from '@/models/song'
 import { buildSongCompare, loadSortSettings, saveSortSettings, SortSettings } from '@/models/sortSettings'
 import { useArchiveSongs } from '@/models/swrApi'
@@ -28,35 +27,28 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 	const { data, isLoading, error } = useArchiveSongs(params.archiveId) || {}
 	const [loadPdfError, setLoadPdfError] = React.useState<string | null>(null)
 	const [showToast, setShowToast] = React.useState(true)
-	const pathname = usePathname() || ''
+	const pathname = usePathname() ?? ''
 
-	const [pdfDialogParams, setPdfDialogParams] = React.useState<PdfDialogParams | null>(null)
+	const [pdfDialogParams, setPdfDialogParams] = React.useState<PdfFileViewParams | null>(null)
 
 	const fileMap = useFileMapValue()
-	const [iframeIndex, setIframeIndex] = React.useState<number | null>(null)
-	const [songView, setSongView] = useSongView()
+	const [, setSongView] = useSongView()
 
 	const songs = data || []
 	const visibleSongs = songs.filter((song) => !song.hide)
-	const showIframe = iframeIndex !== null
 
 	const onLoadPdf = (index: number) => {
 		const song = songs[index]
 		const file = fileMap?.get(song?._id as unknown as Types.ObjectId)
 		if (file) {
 			setPdfDialogParams({ fileUrl: URL.createObjectURL(file), songs, index: songs?.findIndex((s) => s._id === song._id) || 0, song })
-			return
+		} // Song has no file, use iframe viewer
+		else if (!pathname.endsWith('songview')) {
+			router.push('songs/songview')
+			setSongView(() => {
+				return { songs: visibleSongs, index }
+			})
 		}
-		if (!pathname) {
-			return
-		}
-		if (!pathname.endsWith('songview')) {
-			router.push(pathname + '/songview')
-		}
-		setSongView(() => {
-			return { songs: visibleSongs, index }
-		})
-		// setIframeIndex(index)
 	}
 
 	return (
@@ -64,7 +56,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 			{isLoading && <LoadingIndicator />}
 			{error && showToast && <NpToast onClose={() => setShowToast(false)}>{JSON.stringify(error)}</NpToast>}
 			{loadPdfError && <NpToast onClose={() => setLoadPdfError(null)}>{loadPdfError}</NpToast>}
-			{songs && !pdfDialogParams && !showIframe && (
+			{songs && !pdfDialogParams && (
 				<div className='flex flex-col gap-4 w-full items-start'>
 					<NpBackButton onClick={() => router.back()} />
 
@@ -72,13 +64,12 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 				</div>
 			)}
 			{pdfDialogParams && (
-				<PdfDialog
+				<PdfFileView
 					pdfDialogParams={pdfDialogParams}
 					onLoadPdf={onLoadPdf}
 					onClose={() => setPdfDialogParams(null)}
 				/>
 			)}
-			{showIframe && <PdfIframe iframeIndex={iframeIndex} setIframeIndex={setIframeIndex} songs={songs} onLoadPdf={onLoadPdf} />}
 		</NpMain>
 	)
 }
