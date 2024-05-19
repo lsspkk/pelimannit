@@ -32,9 +32,8 @@ export const ArchiveManageSection = ({ archiveId, onStop }: { archiveId: string;
 
 	return (
 		<div className='flex flex-col gap-4 w-full pt-2 md:pt-4'>
-			<NpSubTitle>Ylläpito</NpSubTitle>
-
-			<div className='flex flex-row gap4 justify-end w-full'>
+			<div className='flex flex-row gap4 justify-between w-full'>
+				<NpSubTitle>Ylläpito</NpSubTitle>
 				<NpButton className='self-end' onClick={onStop}>Lopeta ylläpito</NpButton>
 			</div>
 			{hasRole(archiveUser, ArchiveRole.MANAGER) && (

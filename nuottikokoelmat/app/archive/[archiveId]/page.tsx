@@ -66,7 +66,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 						<div className='w-full'>
 							<NpSubTitle>{data.archivename}</NpSubTitle>
 						</div>
-						<div className='flex gap-4 md:gap-8 w-full'>
+						<div className='flex gap-4 md:gap-8 w-full justify-between'>
 							{section === 'NONE' && <NpButton onClick={() => router.push(`/archive/${data._id}/songs`)}>Kappaleet</NpButton>}
 							{section === 'NONE' && device === 'desktop' && (
 								<NpButton
@@ -87,12 +87,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 								</NpButton>
 							)}
 							{section === 'NONE' && archiveUser?.archiveId === archiveId && (
-								<NpButton
-									className=''
-									onClick={() => setSection('MANAGE')}
-								>
-									Asetukset
-								</NpButton>
+								<NpButton className='' onClick={() => setSection('MANAGE')}>Asetukset</NpButton>
 							)}
 						</div>
 					</div>

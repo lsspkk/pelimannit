@@ -22,7 +22,7 @@ export const CollectionList = ({ archiveId }: { archiveId: string }) => {
 	return (
 		<div className='flex flex-col gap-4 w-full pt-12 md:pt-24'>
 			<div className='flex flex-row w-full justify-between items-center'>
-				<NpSubTitle>Kokoelmat</NpSubTitle>
+				<NpSubTitle>Soittolistat</NpSubTitle>
 				{!showAddCollection && isManager && <NpButton onClick={() => setShowAddCollection(true)}>Lisää</NpButton>}
 			</div>
 

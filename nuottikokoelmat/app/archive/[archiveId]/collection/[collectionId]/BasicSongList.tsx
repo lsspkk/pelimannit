@@ -6,7 +6,7 @@ import { useSongView } from '@/stores/SongViewContext'
 import { Types } from 'mongoose'
 import { usePathname, useRouter } from 'next/navigation'
 import React from 'react'
-import { BasicSongCard } from './BasicSongCard'
+import { BasicSongCard } from '../../../../../components/BasicSongCard'
 
 export const BasicSongList = ({ songs }: { songs: Song[] }) => {
 	const [pdfDialogParams, setPdfDialogParams] = React.useState<PdfFileViewParams | null>(null)

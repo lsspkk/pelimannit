@@ -3,7 +3,7 @@ import { NpButtonCard } from '@/components/NpButtonCard'
 import { Spinner } from '@/components/Spinner'
 import { Song } from '@/models/song'
 import React from 'react'
-import { displayPath } from './displayPath'
+import { displayPath } from '../app/archive/[archiveId]/collection/[collectionId]/displayPath'
 
 export const BasicSongCard = (
 	{ song, index, onLoadPdf, children }: { song: Song; index: number; onLoadPdf: (index: number) => void; children?: React.ReactNode },
