@@ -5,7 +5,7 @@ import { hasApi, secureFetch } from './config'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
 	try {
-		if (hasApi('/api/archive')) {
+		if (hasApi('/api/archive') && req.method !== 'POST') {
 			await apiHandler(req, res)
 		} else {
 			await mongoHandler(req, res)

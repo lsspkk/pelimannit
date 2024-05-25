@@ -12,6 +12,13 @@ export const metadata = { title: 'Nuottiarkistot', description: 'Nuottiarkistoja
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang='fi'>
+			{
+				/* Load the pdfjs-dist files from public, because of some nextjs issues
+			claim that direct import does not work */
+			}
+			<head>
+				<script src='/pdfjs/pdf.min.mjs' type='module' async />
+			</head>
 			<body className={inter.className}>
 				<FileMapProvider>
 					<SongViewProvider>
