@@ -92,7 +92,10 @@ export const PdfFileView = (
 	useEffect(() => {
 		const cancellable = cachedGetPage()
 		if (cancellable) {
-			return () => cancellable.cancel()
+			return () => {
+				document?.destroy()
+				cancellable.cancel()
+			}
 		}
 	}, [document, currentPage])
 
