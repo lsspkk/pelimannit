@@ -3,6 +3,8 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 async function handler (req: NextApiRequest, res: NextApiResponse) {
 	const session = await getSession(req, res)
+	res.setHeader('Cache-Control', 'no-store')
+
 	const archiveId = session.archiveUser?.archiveId
 	if (!archiveId) {
 		session.destroy()
