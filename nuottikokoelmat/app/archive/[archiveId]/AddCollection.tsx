@@ -3,17 +3,16 @@ import { NpButton } from '@/components/NpButton'
 import { NpInput } from '@/components/NpInput'
 import { NpTextArea } from '@/components/NpTextarea'
 import { Collection } from '@/models/collection'
-import { useArchive, useArchiveCollections } from '@/models/swrApi'
+import { useArchiveCollections } from '@/models/swrApi'
 import mongoose from 'mongoose'
-import { useRouter } from 'next/navigation'
 import React from 'react'
 
 export const AddCollection = ({ archiveId, onClose }: { archiveId: string; onClose: () => void }) => {
-	const router = useRouter()
 	const [collectionName, setCollectionName] = React.useState('')
 	const [description, setDescription] = React.useState('')
 	const [inProgress, setInProgress] = React.useState(false)
-	const { data, mutate, error, isLoading } = useArchiveCollections(archiveId)
+	const [errorMessage, setErrorMessage] = React.useState('')
+	const { data, mutate } = useArchiveCollections(archiveId)
 
 	const addCollection = async () => {
 		setInProgress(true)
@@ -31,11 +30,12 @@ export const AddCollection = ({ archiveId, onClose }: { archiveId: string; onClo
 			body: JSON.stringify(newCollection),
 		})
 		if (!response.ok) {
+			setErrorMessage('Kokoelman lisäys epäonnistui')
 			console.error('Failed to add collection', response)
 		} else {
 			const saved = await response.json()
 			mutate([...(data || []), saved])
-			setTimeout(() => router.push(`/archive/${archiveId}`), 200)
+			onClose()
 		}
 		setInProgress(false)
 	}
@@ -47,6 +47,8 @@ export const AddCollection = ({ archiveId, onClose }: { archiveId: string; onClo
 					<div>Kokoelman lisäys</div>
 					<NpInput placeholder='Nimi' value={collectionName} onChange={(e) => setCollectionName(e.target.value)} />
 					<NpTextArea placeholder='Kuvaus' value={description} onChange={(e) => setDescription(e.target.value)} />
+
+					{errorMessage && <div className='text-red-500 my-2'>{errorMessage}</div>}
 
 					<div className='flex gap-2 justify-end'>
 						<NpButton onClick={onClose}>Keskeytä</NpButton>
