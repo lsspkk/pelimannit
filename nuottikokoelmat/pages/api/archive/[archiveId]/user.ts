@@ -4,6 +4,7 @@ import { getSession } from '../../auth'
 
 async function handler (req: NextApiRequest, res: NextApiResponse<ArchiveUser>) {
 	const session = await getSession(req, res)
+	res.setHeader('Cache-Control', 'no-store')
 	if (session.archiveUser) {
 		res.json(session.archiveUser)
 	} else {
