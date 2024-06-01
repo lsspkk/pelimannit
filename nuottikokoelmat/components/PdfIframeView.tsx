@@ -2,17 +2,21 @@
 import { NpBackButton } from '@/components/NpBackButton'
 import { PdfSongNavigation } from '@/components/PdfSongNavigation'
 import { Song } from '@/models/song'
-import { useRouter } from 'next/navigation'
+import { redirect, usePathname, useRouter } from 'next/navigation'
+import path from 'path'
 import React, { useState } from 'react'
 
 // This component is used to display a PDF file in an iframe from the URL of the file.
 export const PdfIframeView = ({ startIndex, songs }: { startIndex: number; songs: Song[] }) => {
 	const router = useRouter()
 	const [index, setIndex] = useState(startIndex)
+	const pathname = usePathname()
 
-	const iframeUrl = songs ? songs[index].url : null
+	const iframeUrl = (songs && index >= 0 && index < songs.length) ? songs[index].url : null
 
 	if (!iframeUrl) {
+		const parentPath = pathname?.substring(0, pathname.lastIndexOf('/'))
+		parentPath && redirect(parentPath)
 		return null
 	}
 
