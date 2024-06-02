@@ -51,7 +51,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 				<div className='flex flex-col gap-4 w-full items-start'>
 					<NpBackButton onClick={() => router.back()} />
 
-					{!isLoading && <ArchiveSongList songs={songs} onLoadPdf={onLoadPdf} archiveId={params.archiveId} songCardType='basic' />}
+					{!isLoading && <ArchiveSongList songs={visibleSongs} onLoadPdf={onLoadPdf} archiveId={params.archiveId} songCardType='basic' />}
 				</div>
 			)}
 			{pdfDialogParams && (

@@ -31,6 +31,7 @@ export default function Home({ params: { archiveId, collectionId } }: { params: 
 
 	const isLoading = cIsLoading || aIsLoading
 	const error = cError || aError
+	const visibleSongs = songs?.filter((song) => !song.hide)
 
 	const onChoiceClick = async (song: Song, choice?: Choice) => {
 		if (choice) {
@@ -47,10 +48,10 @@ export default function Home({ params: { archiveId, collectionId } }: { params: 
 	}
 
 	const onLoadPdf = (index: number) => {
-		if (!pathname.endsWith('songview') && songs) {
+		if (!pathname.endsWith('songview') && visibleSongs) {
 			router.push('songs/songview')
 			setSongView(() => {
-				return { songs, index }
+				return { songs: visibleSongs, index }
 			})
 		}
 	}
@@ -64,11 +65,11 @@ export default function Home({ params: { archiveId, collectionId } }: { params: 
 					{aError && <div>Virhe arkiston kappaleiden lataamisessa: {JSON.stringify(aError)}</div>}
 				</NpToast>
 			)}
-			{songs && (
+			{visibleSongs && (
 				<div className='flex flex-col gap-4 w-full items-start pb-4'>
 					<NpBackButton onClick={() => router.back()} />
 					<ArchiveSongList
-						songs={songs}
+						songs={visibleSongs}
 						choices={choices || []}
 						songCardType='choice'
 						onChoiceClick={onChoiceClick}
