@@ -1,6 +1,6 @@
 import './globals.css'
 import { FileMapProvider } from '@/stores/fileContext'
-import { SongViewProvider } from '@/stores/SongViewContext'
+import { SongViewStoreProvider } from '@/stores/SongViewContext'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Inter } from 'next/font/google'
 import { SWRProvider } from './swr-provider'
@@ -21,9 +21,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 			</head>
 			<body className={inter.className}>
 				<FileMapProvider>
-					<SongViewProvider>
+					<SongViewStoreProvider>
 						<SWRProvider>{children}</SWRProvider>
-					</SongViewProvider>
+					</SongViewStoreProvider>
 				</FileMapProvider>
 				<SpeedInsights />
 			</body>

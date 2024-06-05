@@ -1,38 +1,39 @@
 'use client'
 
 import { Song } from '@/models/song'
-import React, { createContext, useContext, useState } from 'react'
+import { createContext, type ReactNode, useContext, useRef } from 'react'
+import { type StoreApi } from 'zustand'
+import { createWithEqualityFn, useStoreWithEqualityFn } from 'zustand/traditional'
 
-interface SongView {
+export interface SongViewStore {
 	songs: Song[]
 	index: number
+	setSongView: ({ songs, index }: { songs: Song[]; index: number }) => void
+	setIndex: (index: number) => void
+	setSongs: (songs: Song[]) => void
 }
 
-export const emptySongView: SongView = { songs: [], index: -1 }
+const useSongView = createWithEqualityFn<SongViewStore>()((set) => ({
+	songs: [],
+	index: -1,
+	setSongView: ({ songs, index }: { songs: Song[]; index: number }) => set({ songs, index }),
+	setIndex: (index: number) => set({ index }),
+	setSongs: (songs: Song[]) => set({ songs }),
+}))
 
-type SongViewContextType = [SongView, React.Dispatch<React.SetStateAction<SongView>>]
+const SongViewStoreContext = createContext<StoreApi<SongViewStore> | null>(null)
 
-const SongViewContext = createContext<SongViewContextType | undefined>(undefined)
-
-// state to keep the viewer for a list of song files
-export const SongViewProvider = ({ children }: { children: React.ReactNode }) => {
-	const [songView, setSongView] = useState<SongView>(emptySongView)
-
-	return <SongViewContext.Provider value={[songView, setSongView]}>{children}</SongViewContext.Provider>
+export const SongViewStoreProvider = ({ children }: { children: ReactNode }) => {
+	const storeRef = useRef(useSongView)
+	return <SongViewStoreContext.Provider value={storeRef.current}>{children}</SongViewStoreContext.Provider>
 }
 
-export const useSongView = () => {
-	const context = useContext(SongViewContext)
-	if (context === undefined) {
-		throw new Error('useSongView must be used within a SongViewProvider')
+export const useSongViewStore = () => {
+	const storeContext = useContext(SongViewStoreContext)
+
+	if (!storeContext) {
+		throw new Error(`useSongViewStore must be use within SongViewStoreProvider`)
 	}
-	return context
-}
 
-export const useSongViewValue = () => {
-	const context = useContext(SongViewContext)
-	if (context === undefined) {
-		throw new Error('useSongViewValue must be used within a SongViewProvider')
-	}
-	return context[0]
+	return useStoreWithEqualityFn(storeContext)
 }

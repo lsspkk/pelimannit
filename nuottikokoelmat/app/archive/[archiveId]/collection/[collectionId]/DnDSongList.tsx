@@ -3,7 +3,7 @@ import { PdfFileView, PdfFileViewParams } from '@/components/PdfFileView'
 import { ChoiceOrder } from '@/models/choice'
 import { Song } from '@/models/song'
 import { useFileMapValue } from '@/stores/fileContext'
-import { useSongView } from '@/stores/SongViewContext'
+import { useSongViewStore } from '@/stores/SongViewContext'
 import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Types } from 'mongoose'
@@ -16,7 +16,7 @@ export const DnDSongList = ({ songs, saveSongOrder }: { songs: Song[]; saveSongO
 	const sensors = useSensors(useSensor(MouseSensor, { activationConstraint: { distance: 10 } }), useSensor(TouchSensor))
 	const pathname = usePathname() ?? ''
 	const router = useRouter()
-	const [, setSongView] = useSongView()
+	const { setSongView } = useSongViewStore()
 
 	useEffect(() => {
 		void saveSongOrder(dndSongs.map((s, index) => ({ songId: s._id, index })))
@@ -31,9 +31,7 @@ export const DnDSongList = ({ songs, saveSongOrder }: { songs: Song[]; saveSongO
 			setPdfDialogParams({ fileUrl: URL.createObjectURL(file), songs, index: songs?.findIndex((s) => s._id === song._id) || 0, song })
 		} else if (!pathname.endsWith('songview')) {
 			router.push(pathname + '/songview')
-			setSongView(() => {
-				return { songs, index }
-			})
+			setSongView({ songs, index })
 		}
 	}
 

@@ -4,13 +4,12 @@ import { ArchiveSongList } from '@/components/archiveSongList/ArchiveSongList'
 import { LoadingIndicator } from '@/components/LoadingIndicator'
 import { NpBackButton } from '@/components/NpBackButton'
 import { NpMain } from '@/components/NpMain'
-import { NpTitle } from '@/components/NpTitle'
 import { NpToast } from '@/components/NpToast'
 import { addChoice, removeChoice } from '@/models/api'
 import { Choice } from '@/models/choice'
 import { Song } from '@/models/song'
 import { useArchiveSongs, useCollectionChoices, useCollectionSongs } from '@/models/swrApi'
-import { useSongView } from '@/stores/SongViewContext'
+import { useSongViewStore } from '@/stores/SongViewContext'
 import { Types } from 'mongoose'
 import { usePathname, useRouter } from 'next/navigation'
 import React from 'react'
@@ -26,7 +25,7 @@ export default function Home({ params: { archiveId, collectionId } }: { params: 
 	// @ts-ignore
 	const { data: songs, isLoading: aIsLoading, error: aError } = useArchiveSongs(archiveId) || {}
 
-	const [, setSongView] = useSongView()
+	const { setSongView } = useSongViewStore()
 	const [showToast, setShowToast] = React.useState(true)
 
 	const isLoading = cIsLoading || aIsLoading
@@ -50,9 +49,7 @@ export default function Home({ params: { archiveId, collectionId } }: { params: 
 	const onLoadPdf = (index: number) => {
 		if (!pathname.endsWith('songview') && visibleSongs) {
 			router.push('songs/songview')
-			setSongView(() => {
-				return { songs: visibleSongs, index }
-			})
+			setSongView({ songs: visibleSongs, index })
 		}
 	}
 

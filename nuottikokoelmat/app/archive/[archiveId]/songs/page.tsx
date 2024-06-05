@@ -8,7 +8,7 @@ import { NpToast } from '@/components/NpToast'
 import { PdfFileView, PdfFileViewParams } from '@/components/PdfFileView'
 import { useArchiveSongs } from '@/models/swrApi'
 import { useFileMapValue } from '@/stores/fileContext'
-import { useSongView } from '@/stores/SongViewContext'
+import { useSongViewStore } from '@/stores/SongViewContext'
 import { Types } from 'mongoose'
 import { usePathname, useRouter } from 'next/navigation'
 import React from 'react'
@@ -24,7 +24,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 	const [pdfDialogParams, setPdfDialogParams] = React.useState<PdfFileViewParams | null>(null)
 
 	const fileMap = useFileMapValue()
-	const [, setSongView] = useSongView()
+	const { setSongView } = useSongViewStore()
 
 	const songs = data || []
 	const visibleSongs = songs.filter((song) => !song.hide)
@@ -37,9 +37,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 		} // Song has no file, use iframe viewer
 		else if (!pathname.endsWith('songview')) {
 			router.push('songs/songview')
-			setSongView(() => {
-				return { songs: visibleSongs, index }
-			})
+			setSongView({ songs: visibleSongs, index })
 		}
 	}
 
