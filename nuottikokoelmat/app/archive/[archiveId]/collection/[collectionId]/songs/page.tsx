@@ -25,7 +25,7 @@ export default function Home({ params: { archiveId, collectionId } }: { params: 
 	// @ts-ignore
 	const { data: songs, isLoading: aIsLoading, error: aError } = useArchiveSongs(archiveId) || {}
 
-	const { setSongView } = useSongViewStore()
+	const { setIndex } = useSongViewStore()
 	const [showToast, setShowToast] = React.useState(true)
 
 	const isLoading = cIsLoading || aIsLoading
@@ -49,7 +49,7 @@ export default function Home({ params: { archiveId, collectionId } }: { params: 
 	const onLoadPdf = (index: number) => {
 		if (!pathname.endsWith('songview') && visibleSongs) {
 			router.push('songs/songview')
-			setSongView({ songs: visibleSongs, index })
+			setIndex(index)
 		}
 	}
 

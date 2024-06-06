@@ -20,7 +20,7 @@ export const ArchiveSongList = (
 	},
 ) => {
 	const [showControls, setShowControls] = React.useState(false)
-	const { sortSettings, setSortSettings, sortedSongs } = useSortSettings({ archiveId, songs })
+	const { sortSettings, updateSortSettings, sortedSongs } = useSortSettings({ archiveId, songs })
 
 	return (
 		<div className='flex flex-col gap-4 w-full items-start'>
@@ -30,7 +30,7 @@ export const ArchiveSongList = (
 				</NpButton>
 			</div>
 			{showControls && (
-				<SortSettingsDialog onClose={() => setShowControls(false)} sortSettings={sortSettings} setSortSettings={setSortSettings} />
+				<SortSettingsDialog onClose={() => setShowControls(false)} sortSettings={sortSettings} updateSortSettings={updateSortSettings} />
 			)}
 			<div className='flex-col w-full items-start flex gap-2 -mt-4 mb-4'>
 				{sortedSongs.map((song, index) => (
@@ -39,7 +39,7 @@ export const ArchiveSongList = (
 							<BasicSongCard
 								song={song}
 								onLoadPdf={() =>
-									onLoadPdf(songs.findIndex((s) => s._id === song._id))}
+									onLoadPdf(sortedSongs.findIndex((s) => s._id === song._id))}
 								index={index}
 							>
 								{sortSettings.year === 'NONE' && isFirstAlphabet(sortedSongs, index) && (
@@ -52,7 +52,7 @@ export const ArchiveSongList = (
 							<ChoiceSongCard
 								song={song}
 								onChoiceClick={onChoiceClick}
-								onLoadPdf={() => onLoadPdf(songs.findIndex((s) => s._id === song._id))}
+								onLoadPdf={() => onLoadPdf(sortedSongs.findIndex((s) => s._id === song._id))}
 								choice={choices?.find((c) => c.songId === song._id)}
 							>
 								{sortSettings.year === 'NONE' && isFirstAlphabet(sortedSongs, index) && (

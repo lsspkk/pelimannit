@@ -5,13 +5,13 @@ import { NpInput } from '@/components/NpInput'
 import { NpTitle } from '@/components/NpTitle'
 import { PdfFileView } from '@/components/PdfFileView'
 import { useSwipe } from '@/components/useSwipe'
-import mongoose, { ObjectId, Types } from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 import React, { useState } from 'react'
 
 export default function Home() {
 	const [pdfFile, setPdfFile] = useState<Blob | null>(null)
 	const [fileId, setFileId] = useState<string>('1QkpfMqg6Ey2_QvnApVnBR6iLkQOdNLi5')
-	const [swipeName, setName] = useState<string>('')
+	const [swipeName, setSwipeName] = useState<string>('')
 	const getPdfFile = async () => {
 		const response = await fetch(`/api/drive/file/${fileId}`)
 		if (response.ok) {
@@ -20,7 +20,7 @@ export default function Home() {
 		}
 	}
 
-	const { onTouchEnd } = useSwipe({ onSwipedLeft: () => setName('left'), onSwipedRight: () => setName('right') })
+	const { onTouchEnd } = useSwipe({ onSwipedLeft: () => setSwipeName('left'), onSwipedRight: () => setSwipeName('right') })
 	console.debug({ onTouchEnd })
 
 	return (

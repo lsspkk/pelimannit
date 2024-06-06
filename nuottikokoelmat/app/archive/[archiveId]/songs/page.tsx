@@ -24,7 +24,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 	const [pdfDialogParams, setPdfDialogParams] = React.useState<PdfFileViewParams | null>(null)
 
 	const fileMap = useFileMapValue()
-	const { setSongView } = useSongViewStore()
+	const { setIndex } = useSongViewStore()
 
 	const songs = data || []
 	const visibleSongs = songs.filter((song) => !song.hide)
@@ -37,7 +37,7 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 		} // Song has no file, use iframe viewer
 		else if (!pathname.endsWith('songview')) {
 			router.push('songs/songview')
-			setSongView({ songs: visibleSongs, index })
+			setIndex(index)
 		}
 	}
 

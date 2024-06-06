@@ -6,10 +6,10 @@ import { SortSettings } from '@/models/sortSettings'
 import React from 'react'
 
 export const SortSettingsDialog = (
-	{ onClose, sortSettings, setSortSettings }: {
+	{ onClose, sortSettings, updateSortSettings }: {
 		onClose: () => void
 		sortSettings: SortSettings
-		setSortSettings: (sortSettings: SortSettings) => void
+		updateSortSettings: (sortSettings: SortSettings) => void
 	},
 ) => {
 	const { year, songname } = sortSettings
@@ -18,7 +18,7 @@ export const SortSettingsDialog = (
 	const songnameDesc = songname === 'DESC' && year === 'NONE'
 
 	const onSortRadio = (year: 'ASC' | 'DESC' | 'NONE', songname: 'ASC' | 'DESC' | 'NONE') => {
-		setSortSettings({ ...sortSettings, year, songname })
+		updateSortSettings({ ...sortSettings, year, songname })
 	}
 
 	return (
@@ -31,7 +31,11 @@ export const SortSettingsDialog = (
 			<div className='flex gap-4 content-evenly'>
 				<div className='flex flex-col gap-2 w-1/2'>
 					<label htmlFor='filter' className='text-gray-500'>Rajaus</label>
-					<NpInput id='filter' value={sortSettings.filter} onChange={(e) => setSortSettings({ ...sortSettings, filter: e.target.value })} />
+					<NpInput
+						id='filter'
+						value={sortSettings.filter}
+						onChange={(e) => updateSortSettings({ ...sortSettings, filter: e.target.value })}
+					/>
 				</div>
 
 				<div className='flex flex-col gap-2 w-1/2 ml-6'>
