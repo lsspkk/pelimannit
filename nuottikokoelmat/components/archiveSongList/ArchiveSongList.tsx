@@ -25,7 +25,7 @@ export const ArchiveSongList = (
 	return (
 		<div className='flex flex-col gap-4 w-full items-start'>
 			<div className=' self-end -mt-2 mb-2'>
-				<NpButton className='px-[7px] py-[6px] m-[5px] rounded-full fixed right-0' onClick={() => setShowControls(true)}>
+				<NpButton className='rounded-full fixed right-0' onClick={() => setShowControls(true)}>
 					<SortSettingsIcon />
 				</NpButton>
 			</div>
@@ -43,7 +43,7 @@ export const ArchiveSongList = (
 								index={index}
 							>
 								{sortSettings.year === 'NONE' && isFirstAlphabet(sortedSongs, index) && (
-									<FirstAlphabet>{song.songname.charAt(0)}</FirstAlphabet>
+									<FirstAlphabet>{song.songname.charAt(0).toLocaleUpperCase()}</FirstAlphabet>
 								)}
 							</BasicSongCard>
 						)}

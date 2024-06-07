@@ -21,13 +21,13 @@ export const PdfIframeView = ({ startIndex, songs }: { startIndex: number; songs
 	}
 
 	return (
-		<div className='fixed top-0 left-0 w-full h-full bg-white overflow-y-scroll overflow-x-hidden'>
+		<div className='fixed top-0 left-0 w-full h-full bg-white overflow-y-scroll overflow-x-hidden '>
 			<NpBackButton
 				onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 					e.preventDefault()
 					router.back()
 				}}
-				className='z-10'
+				className='z-10 -mr-2 -mt-6'
 				songPage
 			/>
 			<PdfSongNavigation songs={songs} index={index} onLoadPdf={(index) => setIndex(index)} />
@@ -39,7 +39,7 @@ export const PdfIframeView = ({ startIndex, songs }: { startIndex: number; songs
 				// Solution: Remount the Iframe (with a Key) to prevent it from adding to the browser history.
 				key={`prevent-iframe-from-adding-to-browser-history-${iframeUrl}`}
 				src={iframeUrl.replaceAll('/view?', '/preview?')}
-				className='w-full h-full bottom-0 z-0'
+				className='w-full h-full bottom-0 z-0 scale-[107%]'
 			/>
 		</div>
 	)

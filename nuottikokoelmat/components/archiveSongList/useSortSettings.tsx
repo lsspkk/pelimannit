@@ -24,10 +24,13 @@ export function useSortSettings ({ archiveId, songs }: { archiveId: string; song
 	}, [])
 
 	const sortAndFilter = (songs: Song[], newSettings: SortSettings) => {
-		const songsToSort = !newSettings.filter
+		const nameFiltered = !newSettings.filter
 			? songs
 			: songs.filter((song) => song.songname.toLowerCase().includes(newSettings.filter.toLowerCase()))
-		return songsToSort.sort(buildSongCompare(newSettings))
+
+		const yearFiltered = !newSettings.yearFilter ? nameFiltered : nameFiltered.filter((song) => song.path.includes(newSettings.yearFilter))
+
+		return yearFiltered.sort(buildSongCompare(newSettings))
 	}
 
 	return { sortSettings, updateSortSettings, sortedSongs }

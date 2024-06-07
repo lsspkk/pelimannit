@@ -1,8 +1,8 @@
 import { SongLite } from './song'
 
 export type SortType = 'ASC' | 'DESC' | 'NONE'
-export type SortSettings = { year: SortType; songname: SortType; filter: string }
-export const defaultSortSettings: SortSettings = { year: 'DESC', songname: 'ASC', filter: '' }
+export type SortSettings = { year: SortType; songname: SortType; filter: string; yearFilter: string }
+export const defaultSortSettings: SortSettings = { year: 'DESC', songname: 'ASC', filter: '', yearFilter: '' }
 
 const extractYear = (path: string) => {
 	const parts = path.split('/')
@@ -47,7 +47,8 @@ export const loadSortSettings = (archiveId: string): SortSettings => {
 	}
 	const sortSettings = localStorage.getItem(`sortSettings-${archiveId}`)
 	if (sortSettings) {
-		return JSON.parse(sortSettings)
+		const loadedSettigns: Partial<SortSettings> = JSON.parse(sortSettings)
+		return { ...defaultSortSettings, ...loadedSettigns }
 	}
 	return defaultSortSettings
 }
