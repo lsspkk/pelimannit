@@ -1,7 +1,7 @@
 'use client'
 import { NpButton } from '@/components/NpButton'
 import { Song } from '@/models/song'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { IconNext } from './icons/IconNext'
 import { IconPrevious } from './icons/IconPrevious'
 import { useSwipe } from './useSwipe'
@@ -26,6 +26,25 @@ export const PdfSongNavigation = ({ songs, index, onLoadPdf }: { songs: Song[]; 
 			setInProgress('NONE')
 		}
 	}
+	useEffect(() => {
+		const keyListener = (e: KeyboardEvent) => {
+			if (e.key === 'ArrowLeft') {
+				console.debug('Previous')
+				onPrevious()
+			}
+			if (e.key === 'ArrowRight') {
+				onNext()
+				console.debug('Next')
+			}
+		}
+
+		document.addEventListener('keydown', keyListener)
+
+		return () => {
+			document.removeEventListener('keydown', keyListener)
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [index])
 
 	const onSwipe = useSwipe({ onSwipedLeft: onNext, onSwipedRight: onPrevious })
 

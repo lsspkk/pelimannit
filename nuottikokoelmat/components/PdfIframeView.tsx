@@ -3,7 +3,6 @@ import { NpBackButton } from '@/components/NpBackButton'
 import { PdfSongNavigation } from '@/components/PdfSongNavigation'
 import { Song } from '@/models/song'
 import { redirect, usePathname, useRouter } from 'next/navigation'
-import path from 'path'
 import React, { useState } from 'react'
 
 // This component is used to display a PDF file in an iframe from the URL of the file.
