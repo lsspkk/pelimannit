@@ -58,7 +58,7 @@ export default function Home() {
       </div>
 
       <div className='flex-col justify-between w-full gap-2'>
-        {data && <div>{data._id}</div>}
+        {data && <div>{String(data?._id)}</div>}
         {data && <div>{data.username}</div>}
         {data && <div>{data.email}</div>}
         {data === null && <div>ei käyttäjää 649889ca9b43f067ab02e000</div>}

@@ -95,7 +95,7 @@ export default function Home() {
 							onChange={(e) => setSongsJson(e.target.value)}
 							placeholder='Copy pastaa tähän kappaleiden lista'
 						/>
-						<NpButton onClick={() => saveSongs(archive?._id)}>Tallenna kappaleet</NpButton>
+						<NpButton onClick={() => saveSongs(String(archive?._id))}>Tallenna kappaleet</NpButton>
 					</div>
 				)}
 			</div>

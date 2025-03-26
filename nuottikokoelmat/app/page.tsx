@@ -21,7 +21,7 @@ export default function Home() {
 		<NpMain title='Nuottiarkistot'>
 			{isLoading && <LoadingIndicator />}
 			{error && showToast && <NpToast onClose={() => setShowToast(false)}>{JSON.stringify(error)}</NpToast>}
-			{data && <div className='flex flex-col gap-4 w-full'>{data.map((d) => <ArchiveCard key={d._id} archive={d} />)}</div>}
+			{data && <div className='flex flex-col gap-4 w-full'>{data.map((d) => <ArchiveCard key={String(d._id)} archive={d} />)}</div>}
 		</NpMain>
 	)
 }

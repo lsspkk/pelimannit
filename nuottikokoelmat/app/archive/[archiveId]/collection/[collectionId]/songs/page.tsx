@@ -35,7 +35,7 @@ export default function Home({ params: { archiveId, collectionId } }: { params: 
 	const onChoiceClick = async (song: Song, choice?: Choice) => {
 		if (choice) {
 			// remove choice
-			await removeChoice(choice._id)
+			await removeChoice(choice._id as unknown as Types.ObjectId)
 			mutate(choices?.filter((c) => c._id !== choice._id))
 			mutateCollectionSongs(collectionSongs?.filter((s) => s._id !== song._id))
 		} else {
