@@ -1,4 +1,5 @@
 import useSWR from 'swr'
+import { AlternativeUrlResponse } from './alternative'
 import { Archive } from './archive'
 import { ArchiveUser } from './archiveUser'
 import { Choice } from './choice'
@@ -46,3 +47,6 @@ export const useIsArchiveManager = (archiveId: string) => {
 	const { data: user, error } = useArchiveUser(archiveId) || {}
 	return !error && user?.archiveId === archiveId
 }
+
+export const useAlternativeUrlResponse = (archiveId: string) =>
+	useSWR<AlternativeUrlResponse, Error>(`/api/archive/${archiveId}/alternativeurl`, fetcher as () => Promise<AlternativeUrlResponse>)

@@ -2,7 +2,6 @@ import { ArchiveModel } from '@/models/archive'
 import { dbConnect } from '@/models/dbConnect'
 import { getSession } from '@/pages/api/auth'
 import { hasApi, secureFetch } from '@/pages/api/config'
-import { get } from 'http'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 async function handler (req: NextApiRequest, res: NextApiResponse) {
@@ -37,6 +36,7 @@ const apiHandler = async (req: NextApiRequest, res: NextApiResponse, archiveId: 
 		await session.save()
 
 		const json = await response.json()
+		console.debug('apiHandler', { archiveId, visitorPassword, json, status: response.status })
 		res.status(response.status).json(json)
 	} else {
 		res.status(500).json({ message: 'method not supported' })

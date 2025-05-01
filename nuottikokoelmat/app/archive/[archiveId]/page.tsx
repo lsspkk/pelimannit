@@ -14,6 +14,7 @@ import { NpSubTitle } from '../../../components/NpTitle'
 import { ArchiveLoginSection } from './ArchiveLoginSection'
 import { ArchiveManageSection } from './ArchiveManageSection'
 import { CollectionList } from './CollectionList'
+import { useAlternativeUrl } from '@/components/useAlternativeUrl'
 
 export type ManagingSection = 'NONE' | 'LOGIN' | 'MANAGE'
 
@@ -27,6 +28,8 @@ export default function Home({ params }: { params: { archiveId: string } }) {
 	const { data: archiveUser, mutate: mutateArchiveUser } = useArchiveUser(archiveId)
 	const [showToast, setShowToast] = React.useState(true)
 	const device = useDevice()
+
+	useAlternativeUrl(archiveId)
 
 	const onStop = async () => {
 		const response = await fetch(`/api/archive/${archiveId}/manage/stop`)

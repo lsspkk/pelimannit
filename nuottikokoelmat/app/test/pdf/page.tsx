@@ -56,6 +56,7 @@ export default function Home() {
 	useEffect(() => {
 		renderPdf()
 	}, [renderPdf])
+
 	return (
 		<div className='flex-col align-center justify-center w-full2 m-12 gap-12 h-1/2 bg-gray-300 overflow-y-scroll overflow-x-hidden'>
 			<div className='flex w-1/2  h-3/8 z-0 overflow-y-scroll'></div>

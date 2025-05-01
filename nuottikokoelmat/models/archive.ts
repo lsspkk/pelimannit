@@ -1,5 +1,10 @@
 import mongoose, { Document, Model, model, Schema } from 'mongoose'
 
+export interface UrlAlternative {
+  priority: number
+  alternative?: string
+}
+
 export interface Archive extends Partial<Document> {
 	archivename: string
 	created: Date
@@ -7,6 +12,7 @@ export interface Archive extends Partial<Document> {
 	url?: string
 	driveId?: string
 	visitorPassword?: string
+	urlAlternatives?: UrlAlternative[]
 }
 
 export const ArchiveSchema = new Schema<Archive>({
@@ -16,6 +22,7 @@ export const ArchiveSchema = new Schema<Archive>({
 	url: { type: String, required: false },
 	driveId: { type: String, required: false },
 	visitorPassword: { type: String, required: false },
+	urlAlternatives: [{ priority: { type: Number, required: true }, alternative: { type: String, required: false } }],
 })
 
 export const ArchiveModel = (mongoose.models?.Archive || model<Archive>('Archive', ArchiveSchema)) as unknown as Model<Archive>

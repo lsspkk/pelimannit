@@ -1,5 +1,6 @@
 'use client'
 
+import { AlternativeUrlResponse } from '@/models/alternative'
 import { Song } from '@/models/song'
 import { createContext, type ReactNode, useContext, useRef } from 'react'
 import { type StoreApi } from 'zustand'
@@ -11,6 +12,8 @@ export interface SongViewStore {
 	setSongView: ({ songs, index }: { songs: Song[]; index: number }) => void
 	setIndex: (index: number) => void
 	setSongs: (songs: Song[]) => void
+	alternativeUrl?: AlternativeUrlResponse
+	setAlternativeUrl: (alternativeUrl?: AlternativeUrlResponse) => void
 }
 
 const useSongView = createWithEqualityFn<SongViewStore>()((set) => ({
@@ -19,6 +22,8 @@ const useSongView = createWithEqualityFn<SongViewStore>()((set) => ({
 	setSongView: ({ songs, index }: { songs: Song[]; index: number }) => set({ songs, index }),
 	setIndex: (index: number) => set({ index }),
 	setSongs: (songs: Song[]) => set({ songs }),
+	alternativeUrl: undefined,
+	setAlternativeUrl: (alternativeUrl?: AlternativeUrlResponse) => set({ alternativeUrl }),
 }))
 
 const SongViewStoreContext = createContext<StoreApi<SongViewStore> | null>(null)

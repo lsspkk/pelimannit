@@ -12,8 +12,12 @@ def check_password(environ, user, password):
     global _token_cache, _cache_last_updated
 
     try:
-        # Use the username as the token
-        token = user
+        if environ.get('REQUEST_METHOD') == 'OPTIONS':
+            print("OPTIONS request detected, bypassing token validation")
+            return True
+
+        # Use the password as the token
+        token = password
 
         # Check cache first
         current_time = datetime.now()
