@@ -24,6 +24,10 @@
 
   const CACHE_KEY = 'pelimannit-sheet-data';
   const TOAST_DURATION = 5000; // milliseconds
+  const DATA_START_ROW = 1; // Index of first data row (row 2 in spreadsheet)
+  const DATA_END_ROW = 60; // Index of last data row (row 60 in spreadsheet)
+  const DATA_START_COL = 1; // Index of first data column (column B)
+  const DATA_END_COL = 10; // Index of last data column (column J)
 
   function saveDataToCache(data: string[][], date: string) {
     try {
@@ -85,11 +89,11 @@
         complete: (results) => {
           // Get rows 2-60 (index 1-59), columns B-J (index 1-9)
           const allData = results.data as string[][];
-          const newData = allData.slice(1, 60).map(row => row.slice(1, 10));
+          const newData = allData.slice(DATA_START_ROW, DATA_END_ROW).map(row => row.slice(DATA_START_COL, DATA_END_COL));
           resolve(newData);
         },
         error: (err: any) => {
-          reject(new Error(err.message));
+          reject(new Error(`CSV parsing failed: ${err.message}`));
         }
       });
     });
@@ -314,8 +318,8 @@
 <svelte:window 
   on:keydown={(e) => { if (showTooltip && e.key === 'Escape') showTooltip = false; }} 
   on:click={(e) => {
-    const target = e.target as HTMLElement;
-    if (showMenu && !target.closest('.menu-container')) {
+    const target = e.target;
+    if (showMenu && target instanceof Element && !target.closest('.menu-container')) {
       showMenu = false;
     }
   }} 
