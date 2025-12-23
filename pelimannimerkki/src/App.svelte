@@ -17,6 +17,44 @@
   let favorites = new Set<string>();
   let nameSort: 'none' | 'asc' | 'desc' = 'none';
   let showFavoriteInfo = false;
+  let showDataToast = false;
+  let cachedDataDate = '';
+  let showMenu = false;
+  let isRefreshing = false;
+
+  const CACHE_KEY = 'pelimannit-sheet-data';
+
+  function saveDataToCache(data: string[][], date: string) {
+    try {
+      const cacheData = {
+        data: data,
+        cachedDate: date
+      };
+      localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+    } catch (err) {
+      console.error('Failed to save data to cache:', err);
+    }
+  }
+
+  function loadDataFromCache(): { data: string[][], cachedDate: string } | null {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (err) {
+      console.error('Failed to load data from cache:', err);
+    }
+    return null;
+  }
+
+  function formatDateFinnish(dateString: string): string {
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+  }
 
   // Load favorites from localStorage
   onMount(() => {
@@ -178,6 +216,22 @@
   }
 
   onMount(async () => {
+    // Load from cache first if available
+    const cachedData = loadDataFromCache();
+    if (cachedData) {
+      data = cachedData.data;
+      cachedDataDate = formatDateFinnish(cachedData.cachedDate);
+      loading = false;
+      randomizeWithDistance();
+      showDataToast = true;
+      
+      // Auto-hide toast after 5 seconds
+      setTimeout(() => {
+        showDataToast = false;
+      }, 5000);
+    }
+
+    // Fetch fresh data in background
     try {
       const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`;
       const response = await fetch(url);
@@ -192,24 +246,103 @@
         complete: (results) => {
           // Get rows 2-60 (index 1-59), columns B-J (index 1-9)
           const allData = results.data as string[][];
-          data = allData.slice(1, 60).map(row => row.slice(1, 10));
+          const newData = allData.slice(1, 60).map(row => row.slice(1, 10));
+          
+          // Save to cache
+          const currentDate = new Date().toISOString();
+          saveDataToCache(newData, currentDate);
+          
+          // Update data if we didn't load from cache
+          if (!cachedData) {
+            data = newData;
+            cachedDataDate = formatDateFinnish(currentDate);
+            showDataToast = true;
+            setTimeout(() => {
+              showDataToast = false;
+            }, 5000);
+          } else {
+            // Update silently if loaded from cache
+            data = newData;
+            cachedDataDate = formatDateFinnish(currentDate);
+          }
+          
           loading = false;
           // Automatically randomize on load
           randomizeWithDistance();
         },
         error: (err: any) => {
+          if (!cachedData) {
+            error = err.message;
+            loading = false;
+          }
+        }
+      });
+    } catch (err) {
+      if (!cachedData) {
+        error = err instanceof Error ? err.message : 'Unknown error';
+        loading = false;
+      }
+    }
+  });
+
+  async function refreshData() {
+    isRefreshing = true;
+    showMenu = false;
+    
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch sheet data');
+      }
+      
+      const csvText = await response.text();
+      
+      Papa.parse(csvText, {
+        complete: (results) => {
+          // Get rows 2-60 (index 1-59), columns B-J (index 1-9)
+          const allData = results.data as string[][];
+          const newData = allData.slice(1, 60).map(row => row.slice(1, 10));
+          
+          // Save to cache
+          const currentDate = new Date().toISOString();
+          saveDataToCache(newData, currentDate);
+          
+          data = newData;
+          cachedDataDate = formatDateFinnish(currentDate);
+          isRefreshing = false;
+          
+          // Show toast with updated date
+          showDataToast = true;
+          setTimeout(() => {
+            showDataToast = false;
+          }, 5000);
+          
+          // Re-randomize
+          randomizeWithDistance();
+        },
+        error: (err: any) => {
           error = err.message;
-          loading = false;
+          isRefreshing = false;
         }
       });
     } catch (err) {
       error = err instanceof Error ? err.message : 'Unknown error';
-      loading = false;
+      isRefreshing = false;
     }
-  });
+  }
 </script>
 
-<svelte:window on:keydown={(e) => { if (showTooltip && e.key === 'Escape') showTooltip = false; }} />
+<svelte:window 
+  on:keydown={(e) => { if (showTooltip && e.key === 'Escape') showTooltip = false; }} 
+  on:click={(e) => {
+    const target = e.target as HTMLElement;
+    if (showMenu && !target.closest('.menu-container')) {
+      showMenu = false;
+    }
+  }} 
+/>
 
 <main class="min-h-screen bg-linear-to-br from-slate-50 to-slate-100">
   <div class="max-w-7xl mx-auto">
@@ -217,17 +350,45 @@
       <div class="text-sm font-bold">
         Hopeamerkki 2025 Joulukuu
       </div>
-      <a 
-        href="https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit#gid={SHEET_GID}" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        class="flex items-center gap-1 px-3 py-1 text-xs font-semibold bg-white text-gray-900 rounded hover:bg-gray-100 transition-colors"
-      >
-        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
-        </svg>
-        Drive
-      </a>
+      
+      <!-- Three-dot menu -->
+      <div class="relative menu-container">
+        <button 
+          onclick={(e) => { e.stopPropagation(); showMenu = !showMenu; }}
+          class="flex items-center justify-center w-8 h-8 text-xs font-semibold bg-white text-gray-900 rounded hover:bg-gray-100 transition-colors"
+          title="Valikko"
+        >
+          <span class="text-xl leading-none">⋮</span>
+        </button>
+        
+        {#if showMenu}
+          <div class="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+            <a 
+              href="https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit#gid={SHEET_GID}" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg transition-colors"
+              onclick={() => showMenu = false}
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+              </svg>
+              Google Sheets
+            </a>
+            <button
+              type="button"
+              onclick={refreshData}
+              disabled={isRefreshing}
+              class="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-b-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg class="w-4 h-4 {isRefreshing ? 'animate-spin' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+              </svg>
+              {isRefreshing ? 'Päivitetään...' : 'Päivitä data'}
+            </button>
+          </div>
+        {/if}
+      </div>
     </div>
 
     <!-- Tabs -->
@@ -437,4 +598,21 @@
       {/if}
     {/if}
   </div>
+  
+  <!-- Toast notification -->
+  {#if showDataToast && cachedDataDate}
+    <div class="fixed top-4 right-4 z-50 bg-slate-900 text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 max-w-sm">
+      <span class="text-sm">Data ladattu {cachedDataDate}</span>
+      <button
+        type="button"
+        onclick={() => showDataToast = false}
+        class="text-white/70 hover:text-white transition-colors"
+        aria-label="Sulje ilmoitus"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  {/if}
 </main>
