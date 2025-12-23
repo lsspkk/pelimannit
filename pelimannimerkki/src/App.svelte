@@ -23,6 +23,7 @@
   let isRefreshing = false;
 
   const CACHE_KEY = 'pelimannit-sheet-data';
+  const TOAST_DURATION = 5000; // milliseconds
 
   function saveDataToCache(data: string[][], date: string) {
     try {
@@ -54,6 +55,44 @@
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
     return `${day}.${month}.${year}`;
+  }
+
+  function showToastNotification() {
+    showDataToast = true;
+    setTimeout(() => {
+      showDataToast = false;
+    }, TOAST_DURATION);
+  }
+
+  function updateDataAndCache(newData: string[][], currentDate: string) {
+    saveDataToCache(newData, currentDate);
+    data = newData;
+    cachedDataDate = formatDateFinnish(currentDate);
+  }
+
+  async function fetchSheetData(): Promise<string[][]> {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch sheet data');
+    }
+    
+    const csvText = await response.text();
+    
+    return new Promise((resolve, reject) => {
+      Papa.parse(csvText, {
+        complete: (results) => {
+          // Get rows 2-60 (index 1-59), columns B-J (index 1-9)
+          const allData = results.data as string[][];
+          const newData = allData.slice(1, 60).map(row => row.slice(1, 10));
+          resolve(newData);
+        },
+        error: (err: any) => {
+          reject(new Error(err.message));
+        }
+      });
+    });
   }
 
   // Load favorites from localStorage
@@ -223,60 +262,24 @@
       cachedDataDate = formatDateFinnish(cachedData.cachedDate);
       loading = false;
       randomizeWithDistance();
-      showDataToast = true;
-      
-      // Auto-hide toast after 5 seconds
-      setTimeout(() => {
-        showDataToast = false;
-      }, 5000);
+      showToastNotification();
     }
 
     // Fetch fresh data in background
     try {
-      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`;
-      const response = await fetch(url);
+      const newData = await fetchSheetData();
+      const currentDate = new Date().toISOString();
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch sheet data');
+      updateDataAndCache(newData, currentDate);
+      
+      // Show toast only if we didn't load from cache
+      if (!cachedData) {
+        showToastNotification();
       }
       
-      const csvText = await response.text();
-      
-      Papa.parse(csvText, {
-        complete: (results) => {
-          // Get rows 2-60 (index 1-59), columns B-J (index 1-9)
-          const allData = results.data as string[][];
-          const newData = allData.slice(1, 60).map(row => row.slice(1, 10));
-          
-          // Save to cache
-          const currentDate = new Date().toISOString();
-          saveDataToCache(newData, currentDate);
-          
-          // Update data if we didn't load from cache
-          if (!cachedData) {
-            data = newData;
-            cachedDataDate = formatDateFinnish(currentDate);
-            showDataToast = true;
-            setTimeout(() => {
-              showDataToast = false;
-            }, 5000);
-          } else {
-            // Update silently if loaded from cache
-            data = newData;
-            cachedDataDate = formatDateFinnish(currentDate);
-          }
-          
-          loading = false;
-          // Automatically randomize on load
-          randomizeWithDistance();
-        },
-        error: (err: any) => {
-          if (!cachedData) {
-            error = err.message;
-            loading = false;
-          }
-        }
-      });
+      loading = false;
+      // Automatically randomize on load
+      randomizeWithDistance();
     } catch (err) {
       if (!cachedData) {
         error = err instanceof Error ? err.message : 'Unknown error';
@@ -290,43 +293,17 @@
     showMenu = false;
     
     try {
-      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`;
-      const response = await fetch(url);
+      const newData = await fetchSheetData();
+      const currentDate = new Date().toISOString();
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch sheet data');
-      }
+      updateDataAndCache(newData, currentDate);
+      isRefreshing = false;
       
-      const csvText = await response.text();
+      // Show toast with updated date
+      showToastNotification();
       
-      Papa.parse(csvText, {
-        complete: (results) => {
-          // Get rows 2-60 (index 1-59), columns B-J (index 1-9)
-          const allData = results.data as string[][];
-          const newData = allData.slice(1, 60).map(row => row.slice(1, 10));
-          
-          // Save to cache
-          const currentDate = new Date().toISOString();
-          saveDataToCache(newData, currentDate);
-          
-          data = newData;
-          cachedDataDate = formatDateFinnish(currentDate);
-          isRefreshing = false;
-          
-          // Show toast with updated date
-          showDataToast = true;
-          setTimeout(() => {
-            showDataToast = false;
-          }, 5000);
-          
-          // Re-randomize
-          randomizeWithDistance();
-        },
-        error: (err: any) => {
-          error = err.message;
-          isRefreshing = false;
-        }
-      });
+      // Re-randomize
+      randomizeWithDistance();
     } catch (err) {
       error = err instanceof Error ? err.message : 'Unknown error';
       isRefreshing = false;
