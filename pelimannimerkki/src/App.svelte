@@ -103,21 +103,16 @@
       }
     }
 
-    // Process each group separately
-    const processedFavorites = processGroup(favoriteRows);
-    const processedNonFavorites = processGroup(nonFavoriteRows);
-
-    // Combine based on favoritesFirst
+    // Process based on favoritesFirst setting
     if (favoritesFirst) {
+      // Process each group separately and combine favorites first
+      const processedFavorites = processGroup(favoriteRows);
+      const processedNonFavorites = processGroup(nonFavoriteRows);
       workingData = [...processedFavorites, ...processedNonFavorites];
     } else {
-      // Mix them together if not favoritesFirst
-      workingData = [...processedFavorites, ...processedNonFavorites];
-      // Shuffle the combined list
-      for (let i = workingData.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [workingData[i], workingData[j]] = [workingData[j], workingData[i]];
-      }
+      // Combine groups first, then process as one
+      const combinedRows = [...favoriteRows, ...nonFavoriteRows];
+      workingData = processGroup(combinedRows);
     }
 
     // Apply distance algorithm to spread same dance types
