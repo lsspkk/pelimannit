@@ -39,3 +39,6 @@ oma-todo.md
 /omadata
 credentials.json
 localhost.*
+
+
+docs/*feature*
